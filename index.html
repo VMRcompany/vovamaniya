@@ -79,21 +79,24 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.6);
             min-height: 600px;
             z-index: 10;
+            overflow: hidden; /* Важно для скругления углов */
         }
         @media (max-width: 640px) {
             .vk-wrapper {
-                padding: 4px;
+                padding: 0; /* Убираем внутренние отступы на мобилках */
                 margin-bottom: 3rem;
-                min-height: 800px;
-                border-radius: 1rem;
-                width: calc(100% + 16px);
-                margin-left: -8px;
+                min-height: 850px;
+                border-radius: 0; /* На мобилках лучше без скругления по бокам, если на весь экран */
+                width: calc(100% + 32px); /* Полный вылет за границы контейнера */
+                margin-left: -16px;
+                border-left: none;
+                border-right: none;
             }
         }
-        /* Dark mode for VK Widget - refined */
+        /* Dark mode for VK Widget - adjusted to make button RED without inverting images */
         #vk_comments {
-            filter: invert(0.92) hue-rotate(180deg) brightness(1.1) contrast(1.1);
-            background: transparent !important;
+            filter: hue-rotate(145deg) saturate(1.8) brightness(1.1);
+            background: #121212 !important;
             border-radius: 12px;
             overflow: hidden;
         }
@@ -114,21 +117,31 @@
             top: 0;
             right: 0;
             width: 100%;
-            height: 55px; /* Covers the entire header interaction area */
+            height: 55px; 
             z-index: 100;
             cursor: default;
             background: transparent;
-            pointer-events: auto; /* Blocks clicks to the iframe below */
+            pointer-events: auto; 
         }
         .vk-logo-cover {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 35px;
-            height: 35px;
-            background: #0d0d0d; /* Matches the inverted header color */
+            top: 12px;
+            right: 12px;
+            width: 34px; /* Чуть увеличил для надежности */
+            height: 34px;
+            background: #dc2626; /* Наш красный цвет */
             z-index: 101;
-            border-radius: 4px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 13px;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            pointer-events: none; /* Клик ловит щит под ним */
+            user-select: none;
+            border: 1px solid rgba(255,255,255,0.1);
         }
         .vk-shield-bottom {
             position: absolute;
@@ -146,10 +159,11 @@
                 height: 50px;
             }
             .vk-logo-cover {
-                top: 12px;
-                right: 12px;
-                width: 32px;
-                height: 32px;
+                top: 10px;
+                right: 10px;
+                width: 28px;
+                height: 28px;
+                font-size: 10px;
             }
         }
     </style>
@@ -325,7 +339,8 @@
                                 norealtime: 0,
                                 height: 0, // Авто-высота
                                 width: "auto", // Авто-ширина
-                                pageUrl: window.location.href.split('?')[0].split('#')[0] // Чистый URL без параметров
+                                pageUrl: window.location.href.split('?')[0].split('#')[0], // Чистый URL без параметров
+                                dark: 1 // Включаем официальную темную тему
                             });
                         } catch (e) {
                             console.error("VK Widget Error:", e);
@@ -591,7 +606,7 @@
                             </div>
                             <div className="vk-wrapper">
                                 <div className="vk-shield-top">
-                                    <div className="vk-logo-cover"></div>
+                                    <div className="vk-logo-cover">ВМ</div>
                                 </div>
                                 <div id="vk_comments"></div>
                                 <div className="vk-shield-bottom"></div>
