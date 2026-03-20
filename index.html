@@ -94,26 +94,24 @@
                 border-right: none;
             }
         }
-        /* Dark mode with color preservation and RED button */
+        /* Dark mode with color preservation */
         #vk_comments_main, #vk_comments_page {
-            /* invert(0.9) makes it dark. 
-               hue-rotate(155deg) turns VK Blue into Red and keeps faces mostly natural. */
-            filter: invert(0.9) hue-rotate(155deg) brightness(1.2) contrast(1.1);
-            background: white !important;
+            background: #191919 !important;
             border-radius: 12px;
             overflow: hidden;
+            /* Filter removed to keep photos natural as requested */
         }
-        /* Ensure VK iframe is responsive */
+        /* Ensure VK iframe is responsive and can grow */
         #vk_comments_main, #vk_comments_main iframe,
         #vk_comments_page, #vk_comments_page iframe {
             width: 100% !important;
             max-width: 100% !important;
-            min-height: 600px !important;
+            min-height: 300px !important;
         }
         @media (max-width: 640px) {
             #vk_comments_main, #vk_comments_main iframe,
             #vk_comments_page, #vk_comments_page iframe {
-                min-height: 800px !important;
+                min-height: 400px !important;
             }
         }
         /* Full block of the top bar to hide VK logo and links */
@@ -124,7 +122,7 @@
             width: 100%;
             height: 55px; 
             z-index: 100;
-            background: #1a1a1a; /* Matches the inverted background of the iframe */
+            background: #191919; /* Matches VK native dark background */
             cursor: default;
             pointer-events: auto; /* Block all clicks on the top bar */
         }
@@ -152,19 +150,19 @@
         /* Shield for the "Share" checkbox text */
         .vk-shield-share {
             position: absolute;
-            bottom: 48px;
-            left: 45px;
-            width: 200px;
-            height: 24px;
-            background: #1a1a1a; /* Matches the inverted background */
+            top: 152px; /* Adjusted for native dark theme layout */
+            left: 105px;
+            width: 90px;
+            height: 22px;
+            background: #191919; /* Matches VK native dark background */
             z-index: 100;
             pointer-events: none;
         }
         @media (max-width: 640px) {
             .vk-shield-share {
-                bottom: 42px;
-                left: 40px;
-                width: 150px;
+                top: 148px;
+                left: 95px;
+                width: 80px;
             }
         }
         .vk-shield-bottom {
@@ -174,7 +172,7 @@
             right: 0;
             height: 35px;
             z-index: 100;
-            background: #1a1a1a; /* Matches the inverted background */
+            background: #191919;
         }
         @media (max-width: 640px) {
             .vk-shield-top {
@@ -386,7 +384,7 @@
                                 VK.Widgets.Comments("vk_comments_main", {
                                     limit: 15, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
                                     pageUrl: discussionUrl,
-                                    dark: 0
+                                    dark: 1
                                 });
                             }
 
@@ -396,7 +394,7 @@
                                 VK.Widgets.Comments("vk_comments_page", {
                                     limit: 15, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
                                     pageUrl: discussionUrl,
-                                    dark: 0
+                                    dark: 1
                                 });
                             }
                         } catch (e) {
