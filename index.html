@@ -78,9 +78,8 @@
             margin-bottom: 5rem;
             position: relative;
             box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            min-height: 600px;
+            min-height: 400px;
             z-index: 10;
-            overflow: hidden; /* Важно для скругления углов */
         }
         @media (max-width: 640px) {
             .vk-wrapper {
@@ -94,24 +93,24 @@
                 border-right: none;
             }
         }
-        /* Dark mode with color preservation */
+        /* Dark mode with native VK styling for natural images */
         #vk_comments_main, #vk_comments_page {
-            background: #191919 !important;
+            background: #1a1a1a !important;
             border-radius: 12px;
             overflow: hidden;
-            /* Filter removed to keep photos natural as requested */
+            /* Filters removed to preserve original image colors as requested */
         }
-        /* Ensure VK iframe is responsive and can grow */
+        /* Ensure VK iframe is responsive and grows with content */
         #vk_comments_main, #vk_comments_main iframe,
         #vk_comments_page, #vk_comments_page iframe {
             width: 100% !important;
             max-width: 100% !important;
-            min-height: 300px !important;
+            min-height: 400px !important;
         }
         @media (max-width: 640px) {
             #vk_comments_main, #vk_comments_main iframe,
             #vk_comments_page, #vk_comments_page iframe {
-                min-height: 400px !important;
+                min-height: 800px !important;
             }
         }
         /* Full block of the top bar to hide VK logo and links */
@@ -122,7 +121,7 @@
             width: 100%;
             height: 55px; 
             z-index: 100;
-            background: #191919; /* Matches VK native dark background */
+            background: #1a1a1a; /* Matches the dark background */
             cursor: default;
             pointer-events: auto; /* Block all clicks on the top bar */
         }
@@ -150,19 +149,19 @@
         /* Shield for the "Share" checkbox text */
         .vk-shield-share {
             position: absolute;
-            top: 152px; /* Adjusted for native dark theme layout */
-            left: 105px;
-            width: 90px;
-            height: 22px;
-            background: #191919; /* Matches VK native dark background */
+            bottom: 48px;
+            left: 45px;
+            width: 200px;
+            height: 24px;
+            background: #1a1a1a; /* Matches the dark background */
             z-index: 100;
             pointer-events: none;
         }
         @media (max-width: 640px) {
             .vk-shield-share {
-                top: 148px;
-                left: 95px;
-                width: 80px;
+                bottom: 42px;
+                left: 40px;
+                width: 150px;
             }
         }
         .vk-shield-bottom {
@@ -172,7 +171,7 @@
             right: 0;
             height: 35px;
             z-index: 100;
-            background: #191919;
+            background: #1a1a1a; /* Matches the dark background */
         }
         @media (max-width: 640px) {
             .vk-shield-top {
@@ -382,7 +381,7 @@
                             const mainContainer = document.getElementById('vk_comments_main');
                             if (mainContainer && mainContainer.innerHTML === '') {
                                 VK.Widgets.Comments("vk_comments_main", {
-                                    limit: 15, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
+                                    limit: 20, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
                                     pageUrl: discussionUrl,
                                     dark: 1
                                 });
@@ -392,7 +391,7 @@
                             const pageContainer = document.getElementById('vk_comments_page');
                             if (pageContainer && pageContainer.innerHTML === '') {
                                 VK.Widgets.Comments("vk_comments_page", {
-                                    limit: 15, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
+                                    limit: 20, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
                                     pageUrl: discussionUrl,
                                     dark: 1
                                 });
