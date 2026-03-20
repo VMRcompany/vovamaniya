@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ВоваМания</title>
+    <title>ВОВАМАНИЯ</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -64,14 +64,15 @@
             50% { opacity: 0.6; }
         }
         /* VK Comments Custom Styling */
-        #vk_comments, #vk_comments iframe {
+        #vk_comments_main, #vk_comments_main iframe,
+        #vk_comments_page, #vk_comments_page iframe {
             width: 100% !important;
             display: block !important;
         }
         .vk-wrapper {
             width: 100%;
             border-radius: 1.5rem;
-            background: #121212;
+            background: #0a0a0a;
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 12px;
             margin-bottom: 5rem;
@@ -83,35 +84,39 @@
         }
         @media (max-width: 640px) {
             .vk-wrapper {
-                padding: 0; /* Убираем внутренние отступы на мобилках */
-                margin-bottom: 3rem;
-                min-height: 850px;
-                border-radius: 0; /* На мобилках лучше без скругления по бокам, если на весь экран */
-                width: calc(100% + 32px); /* Полный вылет за границы контейнера */
-                margin-left: -16px;
+                padding: 8px 0;
+                margin-bottom: 2rem;
+                min-height: 700px;
+                border-radius: 0;
+                width: 100vw;
+                margin-left: calc(-50vw + 50%);
                 border-left: none;
                 border-right: none;
             }
         }
-        /* Dark mode for VK Widget - adjusted to make button RED without inverting images */
-        #vk_comments {
-            filter: hue-rotate(145deg) saturate(1.8) brightness(1.1);
-            background: #121212 !important;
+        /* Dark mode with color preservation and RED button */
+        #vk_comments_main, #vk_comments_page {
+            /* invert(0.9) makes it dark. 
+               hue-rotate(155deg) turns VK Blue into Red and keeps faces mostly natural. */
+            filter: invert(0.9) hue-rotate(155deg) brightness(1.2) contrast(1.1);
+            background: white !important;
             border-radius: 12px;
             overflow: hidden;
         }
         /* Ensure VK iframe is responsive */
-        #vk_comments, #vk_comments iframe {
+        #vk_comments_main, #vk_comments_main iframe,
+        #vk_comments_page, #vk_comments_page iframe {
             width: 100% !important;
             max-width: 100% !important;
             min-height: 600px !important;
         }
         @media (max-width: 640px) {
-            #vk_comments, #vk_comments iframe {
+            #vk_comments_main, #vk_comments_main iframe,
+            #vk_comments_page, #vk_comments_page iframe {
                 min-height: 800px !important;
             }
         }
-        /* Robust blocking of VK logo and links */
+        /* Full block of the top bar to hide VK logo and links */
         .vk-shield-top {
             position: absolute;
             top: 0;
@@ -119,51 +124,48 @@
             width: 100%;
             height: 55px; 
             z-index: 100;
-            cursor: default;
             background: transparent;
-            pointer-events: auto; 
+            cursor: default;
         }
         .vk-logo-cover {
             position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 34px; /* Чуть увеличил для надежности */
-            height: 34px;
-            background: #dc2626; /* Наш красный цвет */
+            top: 8px;
+            right: 8px;
+            width: 40px; 
+            height: 40px;
+            background: #dc2626; 
             z-index: 101;
-            border-radius: 8px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 900;
-            font-size: 13px;
+            font-size: 15px;
             color: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            pointer-events: none; /* Клик ловит щит под ним */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            pointer-events: none; 
             user-select: none;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
         }
         .vk-shield-bottom {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 40px;
+            height: 35px;
             z-index: 100;
-            background: #121212;
-            cursor: default;
-            pointer-events: auto;
+            background: #0a0a0a;
         }
         @media (max-width: 640px) {
             .vk-shield-top {
                 height: 50px;
             }
             .vk-logo-cover {
-                top: 10px;
-                right: 10px;
-                width: 28px;
-                height: 28px;
-                font-size: 10px;
+                top: 8px;
+                right: 8px;
+                width: 34px;
+                height: 34px;
+                font-size: 12px;
             }
         }
     </style>
@@ -303,6 +305,32 @@
             );
         };
 
+        const DiscussionView = ({ onBack }) => {
+            return (
+                <div className="min-h-screen pt-32 pb-20 px-6">
+                    <div className="max-w-4xl mx-auto">
+                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
+                            <span className="text-red-500 text-[10px] font-black tracking-[0.3em] uppercase mb-4 block">Сообщество</span>
+                            <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 uppercase">ОБСУЖДЕНИЕ</h1>
+                            <p className="text-white/60 max-w-2xl mx-auto">Оставляйте свои отзывы, предложения и просто общайтесь с другими участниками нашего сообщества!</p>
+                        </motion.div>
+
+                        <div className="vk-wrapper">
+                            <div className="vk-shield-top">
+                                <div className="vk-logo-cover">ВМ</div>
+                            </div>
+                            <div id="vk_comments_page"></div>
+                            <div className="vk-shield-bottom"></div>
+                        </div>
+                        
+                        <div className="text-center mt-12">
+                            <button onClick={onBack} className="text-white/40 hover:text-white font-bold uppercase text-[10px] tracking-widest transition-colors">Вернуться на главную</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const App = () => {
             const [isLoading, setIsLoading] = useState(true);
             const [currentPage, setCurrentPage] = useState('home'); // 'home' or 'test'
@@ -321,27 +349,36 @@
                 
                 // Initialize VK Comments
                 const initVK = () => {
-                    if (window.VK && document.getElementById('vk_comments')) {
+                    if (window.VK) {
                         try {
-                            // Инициализируем только если еще не было инициализации
                             if (!window.vkInitialized) {
                                 VK.init({apiId: 54496397, onlyWidgets: true});
                                 window.vkInitialized = true;
                             }
                             
-                            // Очищаем контейнер перед рендером, если там что-то было
-                            document.getElementById('vk_comments').innerHTML = '';
+                            // Normalize URL to ensure consistency across different environments and page states
+                            const baseUrl = window.location.origin + window.location.pathname.replace(/\/index\.html$/, '/');
+                            const discussionUrl = baseUrl + '#discussion';
                             
-                            VK.Widgets.Comments("vk_comments", {
-                                limit: 15,
-                                attach: "*",
-                                autoPublish: 1,
-                                norealtime: 0,
-                                height: 0, // Авто-высота
-                                width: "auto", // Авто-ширина
-                                pageUrl: window.location.href.split('?')[0].split('#')[0], // Чистый URL без параметров
-                                dark: 1 // Включаем официальную темную тему
-                            });
+                            // Render main widget (persistent footer section)
+                            const mainContainer = document.getElementById('vk_comments_main');
+                            if (mainContainer && mainContainer.innerHTML === '') {
+                                VK.Widgets.Comments("vk_comments_main", {
+                                    limit: 15, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
+                                    pageUrl: discussionUrl,
+                                    dark: 0
+                                });
+                            }
+
+                            // Render page widget (specific Discussion page)
+                            const pageContainer = document.getElementById('vk_comments_page');
+                            if (pageContainer && pageContainer.innerHTML === '') {
+                                VK.Widgets.Comments("vk_comments_page", {
+                                    limit: 15, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
+                                    pageUrl: discussionUrl,
+                                    dark: 0
+                                });
+                            }
                         } catch (e) {
                             console.error("VK Widget Error:", e);
                         }
@@ -350,7 +387,7 @@
                     }
                 };
                 initVK();
-            }, []);
+            }, [currentPage]);
 
             const handleSendFeedback = async (e) => {
                 e.preventDefault();
@@ -381,7 +418,7 @@
 
             const serverRules = [
                 "Запрещено использование читов.",
-                "Запрещен гриферство и воровство.",
+                "Запрещено гриферство и воровство.",
                 "Запрещен спам и оскорбления.",
                 "Запрещена реклама.",
                 "Запрещено создание лаг-машин.",
@@ -397,22 +434,15 @@
                     <nav className="fixed top-0 w-full z-50 bg-black/50 backdrop-blur-md border-b border-white/10">
                         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <button onClick={() => setIsMenuOpen(true)} className="p-2 hover:bg-white/10 rounded-lg transition-colors md:hidden">
+                                <button onClick={() => setIsMenuOpen(true)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
                                     <Icons.Menu className="w-5 h-5" />
                                 </button>
                                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentPage('home')}>
                                     <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center font-black text-white text-sm">ВМ</div>
-                                    <span className="font-bold text-lg tracking-tighter uppercase hidden sm:block">ВоваМания</span>
+                                    <span className="font-bold text-lg tracking-tighter uppercase">ВОВАМАНИЯ</span>
                                 </div>
                             </div>
                             
-                            <div className="hidden md:flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-white/60">
-                                <button onClick={() => setCurrentPage('home')} className={`transition-colors ${currentPage === 'home' ? 'text-red-500' : 'text-white/60 hover:text-red-500'}`}>Главная</button>
-                                <a href="#minecraft" className="hover:text-red-500 transition-colors">Minecraft</a>
-                                <a href="#youtube" className="hover:text-red-500 transition-colors">YouTube</a>
-                                <a href="#contact" className="hover:text-red-500 transition-colors">Написать</a>
-                            </div>
-
                             <a href="https://www.youtube.com/@Воваааанчик" target="_blank" className="bg-white text-black px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-tighter hover:bg-red-500 hover:text-white transition-all">Подписаться</a>
                         </div>
                     </nav>
@@ -426,11 +456,11 @@
                                     <div className="flex items-center justify-between mb-10">
                                         <div className="flex items-center gap-2">
                                             <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center font-black text-white text-sm">ВМ</div>
-                                            <span className="font-bold uppercase tracking-tighter text-sm">ВоваМания</span>
+                                            <span className="font-bold uppercase tracking-tighter text-sm">ВОВАМАНИЯ</span>
                                         </div>
                                         <button onClick={() => setIsMenuOpen(false)} className="p-2 hover:bg-white/10 rounded-lg"><Icons.X className="w-5 h-5" /></button>
                                     </div>
-                                    <div className="flex flex-col gap-5 text-sm font-bold uppercase tracking-widest">
+                                    <div className="flex flex-col gap-5 text-sm font-bold tracking-widest">
                                         <button 
                                             onClick={() => { setCurrentPage('home'); setIsMenuOpen(false); }} 
                                             className={`text-left transition-colors ${currentPage === 'home' ? 'text-red-500' : 'text-white hover:text-red-500'}`}
@@ -441,12 +471,18 @@
                                             onClick={() => { setCurrentPage('test'); setIsMenuOpen(false); }} 
                                             className={`text-left flex items-center gap-2 transition-colors ${currentPage === 'test' ? 'text-red-500' : 'text-white hover:text-red-500'}`}
                                         >
-                                            Minecraft IQ Тест <Icons.Brain className="w-4 h-4" />
+                                            Minecraft IQ тест <Icons.Brain className="w-4 h-4" />
                                         </button>
-                                        <a href="#minecraft" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-red-500 transition-colors">Minecraft Сервер</a>
-                                        <a href="#youtube" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-red-500 transition-colors">YouTube</a>
-                                        <a href="#contact" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-red-500 transition-colors">Написать мне</a>
-                                        <a href="https://t.me/maniya_vova12345mine" target="_blank" className="text-blue-500 flex items-center gap-2">Telegram <Icons.Send className="w-4 h-4" /></a>
+                                        <button 
+                                            onClick={() => { setCurrentPage('discussion'); setIsMenuOpen(false); }} 
+                                            className={`text-left uppercase transition-colors ${currentPage === 'discussion' ? 'text-red-500' : 'text-white hover:text-red-500'}`}
+                                        >
+                                            ОБСУЖДЕНИЕ
+                                        </button>
+                                        <a href="#minecraft" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-red-500 uppercase transition-colors">MINECRAFT СЕРВЕР</a>
+                                        <a href="#youtube" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-red-500 uppercase transition-colors">YOUTUBE</a>
+                                        <a href="#contact" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-red-500 uppercase transition-colors">НАПИСАТЬ МНЕ</a>
+                                        <a href="https://t.me/maniya_vova12345mine" target="_blank" className="text-blue-500 flex items-center gap-2 uppercase">TELEGRAM <Icons.Send className="w-4 h-4" /></a>
                                     </div>
                                 </motion.div>
                             </React.Fragment>
@@ -479,13 +515,13 @@
                                 <AnimatedBlock className="max-w-2xl mx-auto text-center p-8 rounded-[2rem]">
                                     <div className="flex flex-col items-center mb-8">
                                         <div className="p-3 bg-red-600/20 rounded-xl mb-4 backdrop-blur-xl border border-white/10"><Icons.Gamepad2 className="w-6 h-6 text-red-500" /></div>
-                                        <h2 className="text-3xl font-black tracking-tighter uppercase mb-4">Наш Minecraft Сервер</h2>
+                                        <h2 className="text-3xl font-black tracking-tighter uppercase mb-4">MINECRAFT СЕРВЕР</h2>
                                         <p className="text-white/70 text-base leading-relaxed">Заходи на наш сервер VMKA! Мы создали уникальное пространство для выживания, творчества и общения.</p>
                                     </div>
                                     <div className="max-w-md mx-auto">
                                         <div className="p-4 bg-white/5 rounded-2xl flex items-center justify-between gap-4 border border-white/5">
                                             <div className="text-left min-w-0 flex-1">
-                                                <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1">Адрес сервера</p>
+                                                <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1">АДРЕС СЕРВЕРА</p>
                                                 <p className="text-lg md:text-xl font-mono font-bold text-red-500 truncate">{serverIp}</p>
                                             </div>
                                             <button 
@@ -493,7 +529,7 @@
                                                 className="shrink-0 p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all active:scale-90 relative border border-white/5"
                                             >
                                                 {copied ? <Icons.Check className="w-5 h-5 text-red-500" /> : <Icons.Copy className="w-5 h-5" />}
-                                                {copied && <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[9px] font-bold px-2 py-1 rounded shadow-xl whitespace-nowrap">Скопировано!</span>}
+                                                {copied && <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[9px] font-bold px-2 py-1 rounded shadow-xl whitespace-nowrap">СКОПИРОВАНО!</span>}
                                             </button>
                                         </div>
                                     </div>
@@ -512,10 +548,10 @@
                                                     <Icons.Youtube className="w-10 h-10 text-white" />
                                                 </motion.div>
                                             </div>
-                                            <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-6 leading-tight">Стань частью <br /> <span className="text-red-600">ВоваМании</span></h2>
+                                            <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-6 leading-tight">СТАНЬ ЧАСТЬЮ <br /> <span className="text-red-600">ВОВАМАНИИ</span></h2>
                                             <p className="text-white/60 text-lg max-w-xl mx-auto mb-8 font-medium">Следи за новыми выпусками! Я регулярно выкладываю прохождения и веселые видео.</p>
                                             <motion.a href="https://www.youtube.com/@Воваааанчик" target="_blank" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="inline-flex items-center gap-3 bg-red-600 text-white px-8 py-4 rounded-2xl font-black text-xl uppercase tracking-tighter shadow-xl shadow-red-600/50 hover:bg-red-500 transition-all group relative overflow-hidden">
-                                                <span className="relative z-10">Подписаться</span>
+                                                <span className="relative z-10">YOUTUBE</span>
                                                 <Icons.Play className="w-5 h-5 fill-current group-hover:translate-x-1 transition-transform relative z-10" />
                                             </motion.a>
                                         </div>
@@ -536,7 +572,7 @@
                                             </motion.div>
                                         ) : (
                                             <form onSubmit={handleSendFeedback} className="text-left">
-                                                <h2 className="text-2xl font-black uppercase tracking-tighter mb-2 text-center">Написать мне</h2>
+                                                <h2 className="text-2xl font-black tracking-tighter mb-2 text-center">Написать мне</h2>
                                                 <p className="text-white/40 text-center mb-8 text-sm">Есть предложение? Пиши!</p>
                                                 <div className="space-y-3">
                                                     <input type="text" placeholder="Твое имя" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 focus:outline-none focus:border-red-500 transition-colors text-white placeholder:text-white/20 text-sm" />
@@ -578,8 +614,10 @@
                                 </div>
                             </section>
                         </React.Fragment>
-                    ) : (
+                    ) : currentPage === 'test' ? (
                         <IQTest onBack={() => setCurrentPage('home')} />
+                    ) : (
+                        <DiscussionView onBack={() => setCurrentPage('home')} />
                     )}
 
                     {/* Footer */}
@@ -587,32 +625,32 @@
                         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
                             <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 bg-red-600 rounded flex items-center justify-center font-black text-white text-[10px]">ВМ</div>
-                                <span className="font-bold tracking-tighter uppercase text-sm">ВоваМания</span>
+                                <span className="font-bold tracking-tighter uppercase text-sm">ВОВАМАНИЯ</span>
                             </div>
-                            <p className="text-white/40 text-[9px] font-medium uppercase tracking-[0.2em]">© 2026 ВоваМания. Все права защищены.</p>
+                            <p className="text-white/40 text-[9px] font-medium uppercase tracking-[0.2em]">© 2026 ВОВАМАНИЯ. Все права защищены.</p>
                             <div className="flex items-center gap-4">
                                 <a href="https://t.me/maniya_vova12345mine" target="_blank" className="text-white/40 hover:text-white transition-colors"><Icons.Send className="w-4 h-4" /></a>
                                 <a href="https://www.youtube.com/@Воваааанчик" target="_blank" className="text-white/40 hover:text-white transition-colors"><Icons.Youtube className="w-4 h-4" /></a>
                                 <a href="#" className="text-white/40 hover:text-white transition-colors"><Icons.Gamepad2 className="w-4 h-4" /></a>
                             </div>
                         </div>
-
-                        {/* VK Comments Widget */}
-                        <div className="max-w-4xl mx-auto mt-20 px-4 sm:px-6">
-                            <div className="flex items-center justify-center gap-3 mb-8">
-                                <div className="h-px bg-white/10 flex-1"></div>
-                                <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-center">Обсуждение</h2>
-                                <div className="h-px bg-white/10 flex-1"></div>
-                            </div>
-                            <div className="vk-wrapper">
-                                <div className="vk-shield-top">
-                                    <div className="vk-logo-cover">ВМ</div>
-                                </div>
-                                <div id="vk_comments"></div>
-                                <div className="vk-shield-bottom"></div>
-                            </div>
-                        </div>
                     </footer>
+
+                    {/* VK Comments Widget - Main Page Bottom */}
+                    <div className="max-w-4xl mx-auto mt-10 mb-20 px-4 sm:px-6">
+                        <div className="flex items-center justify-center gap-3 mb-8">
+                            <div className="h-px bg-white/10 flex-1"></div>
+                            <h2 className="text-2xl md:text-3xl font-black tracking-tighter text-center uppercase">ОБСУЖДЕНИЕ</h2>
+                            <div className="h-px bg-white/10 flex-1"></div>
+                        </div>
+                        <div className="vk-wrapper">
+                            <div className="vk-shield-top">
+                                <div className="vk-logo-cover">ВМ</div>
+                            </div>
+                            <div id="vk_comments_main"></div>
+                            <div className="vk-shield-bottom"></div>
+                        </div>
+                    </div>
                 </div>
             );
         };
