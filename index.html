@@ -95,10 +95,10 @@
         }
         /* Dark mode with color preservation and RED button */
         #vk_comments_main, #vk_comments_page {
-            /* Using native dark mode (dark: 1) and hue-rotate to make blue elements red.
-               We avoid invert() to keep avatars looking natural and not oversaturated. */
-            filter: hue-rotate(150deg) saturate(0.9) brightness(1.1);
-            background: #191919 !important;
+            /* invert(0.9) makes it dark. 
+               hue-rotate(155deg) turns VK Blue into Red and keeps faces mostly natural. */
+            filter: invert(0.9) hue-rotate(155deg) brightness(1.1) contrast(1.2);
+            background: white !important;
             border-radius: 12px;
             overflow: hidden;
         }
@@ -123,7 +123,7 @@
             width: 100%;
             height: 55px; 
             z-index: 100;
-            background: #191919; /* Matches VK dark background */
+            background: #1a1a1a; /* Matches the inverted background */
             cursor: default;
             pointer-events: auto; /* Block all clicks on the top bar */
         }
@@ -155,7 +155,7 @@
             left: 45px;
             width: 200px;
             height: 24px;
-            background: #191919; /* Matches VK dark background */
+            background: #1a1a1a; /* Matches the inverted background */
             z-index: 100;
             pointer-events: none;
         }
@@ -173,7 +173,7 @@
             right: 0;
             height: 35px;
             z-index: 100;
-            background: #191919; /* Matches VK dark background */
+            background: #1a1a1a; /* Matches the inverted background */
         }
         @media (max-width: 640px) {
             .vk-shield-top {
@@ -385,7 +385,7 @@
                                 VK.Widgets.Comments("vk_comments_main", {
                                     limit: 20, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
                                     pageUrl: discussionUrl,
-                                    dark: 1
+                                    dark: 0
                                 });
                             }
 
@@ -395,7 +395,7 @@
                                 VK.Widgets.Comments("vk_comments_page", {
                                     limit: 20, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
                                     pageUrl: discussionUrl,
-                                    dark: 1
+                                    dark: 0
                                 });
                             }
                         } catch (e) {
