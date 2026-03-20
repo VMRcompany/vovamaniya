@@ -28,6 +28,8 @@
     <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
     <!-- EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- VK Open API -->
+    <script type="text/javascript" src="https://vk.com/js/api/openapi.js?169"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -60,6 +62,33 @@
         @keyframes pulse {
             0%, 100% { opacity: 0.3; }
             50% { opacity: 0.6; }
+        }
+        /* VK Comments Custom Styling */
+        #vk_comments, #vk_comments iframe {
+            width: 100% !important;
+            display: block !important;
+        }
+        #vk_comments iframe {
+            min-height: 600px !important;
+        }
+        .vk-wrapper {
+            width: 100%;
+            border-radius: 1.5rem;
+            background: #121212;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 12px;
+            margin-bottom: 5rem;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            /* Убираем overflow: hidden, чтобы не мешать всплывающим окнам */
+        }
+        @media (max-width: 640px) {
+            .vk-wrapper {
+                padding: 8px;
+            }
+            #vk_comments iframe {
+                min-height: 500px !important;
+            }
         }
     </style>
 </head>
@@ -158,8 +187,7 @@
                                             key={i} 
                                             onClick={() => handleAnswer(i)}
                                             className="w-full p-4 bg-white/5 hover:bg-red-600 rounded-2xl transition-all font-bold text-left border border-white/10 active:scale-95"
-                                                                >
-                                                                 >
+                                        >
                                             {opt}
                                         </button>
                                     ))}
@@ -214,6 +242,22 @@
             useEffect(() => {
                 setTimeout(() => setIsLoading(false), 1500);
                 if (window.emailjs) emailjs.init("VBh-ljt32c38-wL0f");
+                
+                // Initialize VK Comments
+                const initVK = () => {
+                    if (window.VK && document.getElementById('vk_comments')) {
+                        VK.init({apiId: 54409922, onlyWidgets: true});
+                        VK.Widgets.Comments("vk_comments", {
+                            limit: 10,
+                            attach: "*",
+                            height: 600,
+                            pageUrl: window.location.href // Помогает с авторизацией
+                        });
+                    } else {
+                        setTimeout(initVK, 500);
+                    }
+                };
+                initVK();
             }, []);
 
             const handleSendFeedback = async (e) => {
@@ -459,6 +503,18 @@
                                 <a href="https://t.me/maniya_vova12345mine" target="_blank" className="text-white/40 hover:text-white transition-colors"><Icons.Send className="w-4 h-4" /></a>
                                 <a href="https://www.youtube.com/@Воваааанчик" target="_blank" className="text-white/40 hover:text-white transition-colors"><Icons.Youtube className="w-4 h-4" /></a>
                                 <a href="#" className="text-white/40 hover:text-white transition-colors"><Icons.Gamepad2 className="w-4 h-4" /></a>
+                            </div>
+                        </div>
+
+                        {/* VK Comments Widget */}
+                        <div className="max-w-4xl mx-auto mt-20 px-4 sm:px-6">
+                            <div className="flex items-center justify-center gap-3 mb-8">
+                                <div className="h-px bg-white/10 flex-1"></div>
+                                <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-center">Обсуждение</h2>
+                                <div className="h-px bg-white/10 flex-1"></div>
+                            </div>
+                            <div className="vk-wrapper">
+                                <div id="vk_comments"></div>
                             </div>
                         </div>
                     </footer>
