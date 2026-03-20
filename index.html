@@ -78,23 +78,60 @@
             margin-bottom: 5rem;
             position: relative;
             box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            min-height: 600px;
-            overflow: visible;
+            min-height: 1200px;
+            overflow: hidden;
             z-index: 10;
         }
         @media (max-width: 640px) {
             .vk-wrapper {
                 padding: 10px;
                 padding-bottom: 30px;
-                min-height: 700px;
+                min-height: 1500px;
                 border-radius: 1rem;
             }
         }
+        /* Dark mode hack for VK Widget */
+        #vk_comments {
+            filter: invert(1) hue-rotate(180deg) contrast(0.9) brightness(0.9);
+            background: transparent !important;
+        }
         /* Ensure VK iframe doesn't have restricted height and is responsive */
         #vk_comments, #vk_comments iframe {
-            min-height: 600px !important;
+            min-height: 1200px !important;
             width: 100% !important;
             max-width: 100% !important;
+        }
+        @media (max-width: 640px) {
+            #vk_comments, #vk_comments iframe {
+                min-height: 1500px !important;
+            }
+        }
+        /* Blocking VK logo link and branding */
+        .vk-shield {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 160px; /* Wider to cover "Comments" text if needed or just the logo area */
+            height: 50px;
+            z-index: 20;
+            cursor: default;
+            background: #121212; /* Covers the logo and top right area */
+        }
+        .vk-shield-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 35px;
+            z-index: 20;
+            background: #121212;
+            cursor: default;
+        }
+        @media (max-width: 640px) {
+            .vk-shield {
+                top: 10px;
+                right: 10px;
+            }
         }
     </style>
 </head>
@@ -534,7 +571,9 @@
                                 <div className="h-px bg-white/10 flex-1"></div>
                             </div>
                             <div className="vk-wrapper">
+                                <div className="vk-shield"></div>
                                 <div id="vk_comments"></div>
+                                <div className="vk-shield-bottom"></div>
                             </div>
                         </div>
                     </footer>
