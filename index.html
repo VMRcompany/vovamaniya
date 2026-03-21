@@ -95,7 +95,6 @@
         }
         /* Native Dark mode for correct image colors */
         #vk_comments_main, #vk_comments_page {
-            filter: brightness(0.9) contrast(1.1);
             background: #19191a !important;
             border-radius: 12px;
             overflow: hidden;
@@ -348,7 +347,8 @@
                             
                             // Render main widget (persistent footer section)
                             const mainContainer = document.getElementById('vk_comments_main');
-                            if (mainContainer && mainContainer.innerHTML === '') {
+                            if (mainContainer) {
+                                mainContainer.innerHTML = ''; // Force clear to apply new theme settings
                                 VK.Widgets.Comments("vk_comments_main", {
                                     limit: 100, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
                                     pageUrl: discussionUrl,
@@ -358,7 +358,8 @@
 
                             // Render page widget (specific Discussion page)
                             const pageContainer = document.getElementById('vk_comments_page');
-                            if (pageContainer && pageContainer.innerHTML === '') {
+                            if (pageContainer) {
+                                pageContainer.innerHTML = ''; // Force clear to apply new theme settings
                                 VK.Widgets.Comments("vk_comments_page", {
                                     limit: 100, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
                                     pageUrl: discussionUrl,
