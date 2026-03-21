@@ -93,12 +93,11 @@
                 border-right: none;
             }
         }
-        /* Dark mode with color preservation and RED button */
+        /* Dark mode with color preservation and RED accents */
         #vk_comments_main, #vk_comments_page {
-            /* invert(0.9) makes it dark. 
-               hue-rotate(155deg) turns VK Blue into Red and keeps faces mostly natural. */
-            filter: invert(0.9) hue-rotate(155deg) brightness(1.1) contrast(1.2);
-            background: white !important;
+            /* Use hue-rotate to turn blue to red, but avoid invert to keep photos natural */
+            filter: hue-rotate(155deg) brightness(0.9) contrast(1.1);
+            background: #1a1a1a !important;
             border-radius: 12px;
             overflow: hidden;
             border: none !important;
@@ -354,7 +353,7 @@
                                 VK.Widgets.Comments("vk_comments_main", {
                                     limit: 100, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
                                     pageUrl: discussionUrl,
-                                    dark: 0
+                                    dark: 1
                                 });
                             }
 
@@ -364,7 +363,7 @@
                                 VK.Widgets.Comments("vk_comments_page", {
                                     limit: 100, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
                                     pageUrl: discussionUrl,
-                                    dark: 0
+                                    dark: 1
                                 });
                             }
                         } catch (e) {
