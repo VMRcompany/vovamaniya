@@ -93,14 +93,13 @@
                 border-right: none;
             }
         }
-        /* Native Dark mode with subtle enhancement */
+        /* Inverted Dark mode for best appearance */
         #vk_comments_main, #vk_comments_page, #vk_groups {
-            background: #19191a !important;
+            filter: invert(0.9) hue-rotate(155deg) brightness(1.1) contrast(1.2);
+            background: white !important;
             border-radius: 12px;
             overflow: hidden;
             border: none !important;
-            /* Subtle enhancement for dark theme */
-            filter: brightness(0.9) contrast(1.1);
         }
         /* Ensure VK iframe is responsive and grows with content */
         #vk_comments_main, #vk_comments_main iframe,
@@ -362,7 +361,7 @@
                                 VK.Widgets.Comments("vk_comments_main", {
                                     limit: 100, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
                                     pageUrl: discussionUrl,
-                                    dark: 1
+                                    dark: 0
                                 });
                             }
 
@@ -375,7 +374,7 @@
                                 VK.Widgets.Comments("vk_comments_page", {
                                     limit: 100, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
                                     pageUrl: discussionUrl,
-                                    dark: 1
+                                    dark: 0
                                 });
                             }
 
@@ -386,7 +385,7 @@
                                     groupContainer.innerHTML = '<div class="flex items-center justify-center h-32 text-white/10 text-[10px] uppercase tracking-widest animate-pulse">Загрузка сообщества...</div>';
                                 }
                                 VK.Widgets.Group("vk_groups", {
-                                    mode: 3, width: "auto", color1: '19191a', color2: 'ffffff', color3: 'dc2626'
+                                    mode: 3, width: "auto", color1: 'FFFFFF', color2: '000000', color3: 'dc2626'
                                 }, 220162551);
                             }
                         } catch (e) {
