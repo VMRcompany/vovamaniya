@@ -195,7 +195,6 @@
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(err => console.error("Auth Persistence Error:", err));
 
         // Initialize Firestore with named database
-        // Use the app instance to get the specific database
         const db = firebase.app().firestore(firebaseConfig.firestoreDatabaseId);
         
         // Robust override to prevent any part of the app or SDK from hitting "(default)"
@@ -207,32 +206,11 @@
             return originalFirestore.apply(this, arguments);
         };
         
-        // Copy all static properties (Timestamp, FieldValue, etc.)
         Object.keys(originalFirestore).forEach(key => {
             firestoreProxy[key] = originalFirestore[key];
         });
         
-        // Replace the global namespace
         firebase.firestore = firestoreProxy;
-
-        // Test Connection
-        async function testConnection() {
-            try {
-                // Use a direct get from server to verify connectivity
-                await db.collection('test').doc('connection').get({ source: 'server' });
-                console.log("Firebase connection successful to database:", firebaseConfig.firestoreDatabaseId);
-            } catch (error) {
-                if (error.code === 'permission-denied') {
-                    console.warn("Firebase connected, but access to 'test/connection' denied (this is normal if rules are strict).");
-                    return;
-                }
-                console.error("Firebase connection issue:", error.message);
-                if (error.message.includes('not-found') || error.message.includes('default')) {
-                    console.error("CRITICAL: Still trying to reach (default) database. Check firestoreDatabaseId.");
-                }
-            }
-        }
-        testConnection();
 
         // Custom SVG Icons
         const Icons = {
@@ -278,19 +256,12 @@
             Brain: ({ className }) => (
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.54Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.54Z"/></svg>
             ),
-            Lock: ({ className }) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            ),
             Play: ({ className }) => (
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="6 3 20 12 6 21 6 3"/></svg>
-            ),
-            Upload: ({ className }) => (
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
             )
         };
 
         const LoadingScreen = () => {
-            if (!motion || !motion.div) return <div className="fixed inset-0 z-[100] bg-[#0a0a0a] flex items-center justify-center text-white/20 uppercase font-black tracking-widest">Загрузка...</div>;
             return (
                 <motion.div 
                     exit={{ opacity: 0 }}
@@ -301,7 +272,6 @@
                             animate={{ rotate: 360 }}
                             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                             className="w-full h-full border-4 border-red-600/20 border-t-red-600 rounded-full"
-                            style={{ borderTopStyle: 'solid', borderTopWidth: '4px', borderTopColor: '#dc2626', borderRadius: '50%' }}
                         />
                     </div>
                 </motion.div>
@@ -374,7 +344,6 @@
         };
 
         const AnimatedBlock = ({ children, className }) => {
-            if (!motion) return <div className={`glass ${className}`}>{children}</div>;
             return (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -402,83 +371,22 @@
                         photoURL: user.photoURL,
                         lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                     }, { merge: true });
-                    
-                    await db.collection('login_logs').add({
-                        uid: user.uid,
-                        email: user.email,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
                     onClose();
-                } catch (error) {
-                    console.error("Google Login Error:", error);
-                }
-            };
-
-            const handleYandexLogin = async () => {
-                try {
-                    // Fetch the OAuth URL from our server
-                    const response = await fetch('/api/auth/yandex/url');
-                    if (!response.ok) throw new Error('Failed to get auth URL');
-                    const { url } = await response.json();
-
-                    // Open the OAuth provider's URL directly in popup
-                    const authWindow = window.open(
-                        url,
-                        'oauth_popup',
-                        'width=600,height=700'
-                    );
-
-                    if (!authWindow) {
-                        alert('Пожалуйста, разрешите всплывающие окна для входа через Яндекс.');
-                    }
-                } catch (error) {
-                    console.error('Yandex OAuth error:', error);
-                }
+                } catch (error) { console.error(error); }
             };
 
             if (!isOpen) return null;
 
             return (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-                    <motion.div 
-                        initial={{ opacity: 0 }} 
-                        animate={{ opacity: 1 }} 
-                        exit={{ opacity: 0 }} 
-                        onClick={onClose} 
-                        className="absolute inset-0 bg-black/80 backdrop-blur-md"
-                    />
-                    <motion.div 
-                        initial={{ scale: 0.9, opacity: 0, y: 20 }} 
-                        animate={{ scale: 1, opacity: 1, y: 0 }} 
-                        exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                        className="relative glass max-w-sm w-full p-8 rounded-[2.5rem] text-center"
-                    >
-                        <button onClick={onClose} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full">
-                            <Icons.X className="w-5 h-5" />
-                        </button>
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+                    <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative glass max-w-sm w-full p-8 rounded-[2.5rem] text-center">
+                        <button onClick={onClose} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full"><Icons.X className="w-5 h-5" /></button>
                         <h2 className="text-2xl font-black mb-6 uppercase tracking-tighter">Войти в аккаунт</h2>
-                        <div className="space-y-4">
-                            <button 
-                                onClick={handleGoogleLogin}
-                                className="w-full flex items-center justify-center gap-3 bg-white text-black py-4 rounded-2xl font-bold hover:bg-gray-200 transition-all"
-                            >
-                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
-                                Войти с помощью Google
-                            </button>
-                            <button 
-                                onClick={handleYandexLogin}
-                                className="w-full flex items-center justify-center gap-3 bg-[#ffcc00] text-black py-4 rounded-2xl font-bold hover:bg-[#ffdb4d] transition-all"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M50 0C22.3858 0 0 22.3858 0 50C0 77.6142 22.3858 100 50 100C77.6142 100 100 77.6142 100 50C100 22.3858 77.6142 0 50 0ZM73.5294 75H61.7647V38.2353L44.1176 75H32.3529L49.1176 39.7059L35.2941 25H47.0588L58.8235 50.7353V25H70.5882V75H73.5294Z" fill="black"/>
-                                </svg>
-                                Войти с помощью Яндекс ID
-                            </button>
-                        </div>
-                        <p className="mt-6 text-[10px] text-white/40 uppercase tracking-widest leading-relaxed">
-                            Входя в аккаунт, вы соглашаетесь с правилами нашего сообщества.
-                        </p>
+                        <button onClick={handleGoogleLogin} className="w-full flex items-center justify-center gap-3 bg-white text-black py-4 rounded-2xl font-bold hover:bg-gray-200 transition-all">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
+                            Войти с помощью Google
+                        </button>
                     </motion.div>
                 </div>
             );
@@ -486,49 +394,15 @@
 
         const ProfileModal = ({ isOpen, onClose, user, onLogout }) => {
             if (!isOpen || !user) return null;
-
             return (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-                    <motion.div 
-                        initial={{ opacity: 0 }} 
-                        animate={{ opacity: 1 }} 
-                        exit={{ opacity: 0 }} 
-                        onClick={onClose} 
-                        className="absolute inset-0 bg-black/80 backdrop-blur-md"
-                    />
-                    <motion.div 
-                        initial={{ scale: 0.9, opacity: 0, y: 20 }} 
-                        animate={{ scale: 1, opacity: 1, y: 0 }} 
-                        exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                        className="relative glass max-w-sm w-full p-8 rounded-[2.5rem] text-center"
-                    >
-                        <button onClick={onClose} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full">
-                            <Icons.X className="w-5 h-5" />
-                        </button>
-                        
-                        <div className="mb-6">
-                            <img src={user.photoURL} className="w-24 h-24 rounded-full border-4 border-red-600 mx-auto mb-4" />
-                            <h2 className="text-2xl font-black uppercase tracking-tighter">{user.displayName}</h2>
-                            <p className="text-white/40 text-xs font-bold uppercase tracking-widest">{user.email}</p>
-                        </div>
-
-                        <div className="space-y-3">
-                            <div className="p-4 bg-white/5 rounded-2xl text-left border border-white/5">
-                                <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest mb-1">ID Аккаунта</p>
-                                <p className="text-[10px] font-mono text-white/60 truncate">{user.uid}</p>
-                            </div>
-                            <div className="p-4 bg-white/5 rounded-2xl text-left border border-white/5">
-                                <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest mb-1">Роль</p>
-                                <p className="text-[10px] font-bold text-red-500 uppercase">{user.email === 'vovaryzanov2@gmail.com' ? 'Администратор' : 'Пользователь'}</p>
-                            </div>
-                        </div>
-
-                        <button 
-                            onClick={() => { onLogout(); onClose(); }}
-                            className="w-full mt-8 py-4 bg-white/5 hover:bg-red-600/20 text-red-500 rounded-2xl font-bold uppercase tracking-widest text-[10px] transition-all border border-red-500/20"
-                        >
-                            Выйти из аккаунта
-                        </button>
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+                    <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative glass max-w-sm w-full p-8 rounded-[2.5rem] text-center">
+                        <button onClick={onClose} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full"><Icons.X className="w-5 h-5" /></button>
+                        <img src={user.photoURL} className="w-24 h-24 rounded-full border-4 border-red-600 mx-auto mb-4" />
+                        <h2 className="text-2xl font-black uppercase tracking-tighter">{user.displayName}</h2>
+                        <p className="text-white/40 text-xs font-bold uppercase tracking-widest mb-6">{user.email}</p>
+                        <button onClick={() => { onLogout(); onClose(); }} className="w-full py-4 bg-white/5 hover:bg-red-600/20 text-red-500 rounded-2xl font-bold uppercase tracking-widest text-[10px] transition-all border border-red-500/20">Выйти из аккаунта</button>
                     </motion.div>
                 </div>
             );
@@ -536,12 +410,9 @@
 
         const AdminView = ({ onBack }) => {
             const [users, setUsers] = useState([]);
-            const [logs, setLogs] = useState([]);
-
             useEffect(() => {
-                const unsubscribeUsers = db.collection('users').onSnapshot(s => setUsers(s.docs.map(d => d.data())));
-                const unsubscribeLogs = db.collection('login_logs').orderBy('timestamp', 'desc').limit(50).onSnapshot(s => setLogs(s.docs.map(d => d.data())));
-                return () => { unsubscribeUsers(); unsubscribeLogs(); };
+                const unsubscribe = db.collection('users').onSnapshot(s => setUsers(s.docs.map(d => d.data())));
+                return unsubscribe;
             }, []);
 
             return (
@@ -551,37 +422,22 @@
                             <h1 className="text-4xl font-black uppercase tracking-tighter">Панель управления</h1>
                             <button onClick={onBack} className="bg-white/5 hover:bg-white/10 px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-all">Назад</button>
                         </div>
-                        
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <AnimatedBlock className="p-8 rounded-[2rem]">
-                                <h2 className="text-xl font-black mb-6 uppercase tracking-widest text-red-500">Пользователи</h2>
-                                <div className="space-y-4">
-                                    {users.map((u, i) => (
-                                        <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                                            <div className="flex items-center gap-3">
-                                                <img src={u.photoURL || 'https://via.placeholder.com/40'} className="w-10 h-10 rounded-full" />
-                                                <div>
-                                                    <p className="font-bold text-sm">{u.displayName || 'Аноним'}</p>
-                                                    <p className="text-[10px] text-white/40">{u.email}</p>
-                                                </div>
+                        <AnimatedBlock className="p-8 rounded-[2rem]">
+                            <h2 className="text-xl font-black mb-6 uppercase tracking-widest text-red-500">Пользователи</h2>
+                            <div className="space-y-4">
+                                {users.map((u, i) => (
+                                    <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                                        <div className="flex items-center gap-3">
+                                            <img src={u.photoURL} className="w-10 h-10 rounded-full" />
+                                            <div>
+                                                <p className="font-bold text-sm">{u.displayName}</p>
+                                                <p className="text-[10px] text-white/40">{u.email}</p>
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-                            </AnimatedBlock>
-
-                            <AnimatedBlock className="p-8 rounded-[2rem]">
-                                <h2 className="text-xl font-black mb-6 uppercase tracking-widest text-blue-500">Логи входов</h2>
-                                <div className="space-y-3">
-                                    {logs.map((l, i) => (
-                                        <div key={i} className="text-[10px] font-medium p-3 bg-white/5 rounded-xl border border-white/5 flex justify-between">
-                                            <span>{l.email} вошел в систему</span>
-                                            <span className="text-white/20">{l.timestamp?.toDate().toLocaleString()}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </AnimatedBlock>
-                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </AnimatedBlock>
                     </div>
                 </div>
             );
@@ -589,27 +445,17 @@
 
         const DiscussionView = ({ onBack, user }) => {
             return (
-                <div className="min-h-screen pt-32 pb-20 px-6">
+                <div className="min-h-screen pt-24 pb-20 px-6">
                     <div className="max-w-4xl mx-auto">
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
                             <span className="text-red-500 text-[10px] font-black tracking-[0.3em] uppercase mb-4 block">Сообщество</span>
                             <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 uppercase">ОБСУЖДЕНИЕ</h1>
-                            <p className="text-white/60 max-w-2xl mx-auto">Оставляйте свои отзывы, предложения и просто общайтесь с другими участниками нашего сообщества!</p>
                         </motion.div>
-
-                        {!user && (
-                            <div className="mb-12 p-8 glass rounded-[2rem] text-center">
-                                <p className="text-sm font-bold uppercase tracking-widest mb-4">Чтобы писать в обсуждении, нужно войти</p>
-                                <button onClick={() => window.openLoginModal()} className="bg-red-600 px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-red-500 transition-all">Войти сейчас</button>
-                            </div>
-                        )}
-
                         <div className="vk-wrapper">
                             <div className="vk-shield-top"></div>
                             <div className="vk-logo-cover">ВМ</div>
                             <div id="vk_comments_page"></div>
                         </div>
-                        
                         <div className="text-center mt-12">
                             <button onClick={onBack} className="text-white/40 hover:text-white font-bold uppercase text-[10px] tracking-widest transition-colors">Вернуться на главную</button>
                         </div>
@@ -641,8 +487,7 @@
                         db.collection('users').doc(u.uid).get().then(doc => {
                             setUser({ ...u, ...doc.data() });
                             setIsAuthReady(true);
-                        }).catch(err => {
-                            console.error("Error fetching user profile:", err);
+                        }).catch(() => {
                             setUser(u);
                             setIsAuthReady(true);
                         });
@@ -655,59 +500,25 @@
             }, []);
 
             useEffect(() => {
-                // Scroll to top on page change
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                
-                // Update URL to look clean
-                /*
-                const pageNames = {
-                    home: '',
-                    test: 'Тест',
-                    discussion: 'Сообщество',
-                    admin: 'Админ'
-                };
-                const newPath = pageNames[currentPage] ? `/${pageNames[currentPage]}` : '/';
-                window.history.pushState({ page: currentPage }, '', newPath);
-                */
-
                 setTimeout(() => setIsLoading(false), 1000);
                 if (window.emailjs) emailjs.init("VBh-ljt32c38-wL0f");
                 
-                // Initialize VK Comments
                 const initVK = () => {
                     if (window.VK) {
-                        try {
-                            if (!window.vkInitialized) {
-                                VK.init({apiId: 54496397, onlyWidgets: true});
-                                window.vkInitialized = true;
-                            }
-                            
-                            const baseUrl = "https://vovamaniya.vercel.app/";
-                            const discussionUrl = baseUrl + 'Сообщество';
-                            
-                            // Render page widget (specific Discussion page)
-                            const pageContainer = document.getElementById('vk_comments_page');
-                            if (pageContainer && currentPage === 'discussion') {
-                                pageContainer.innerHTML = ''; // Clear previous
-                                VK.Widgets.Comments("vk_comments_page", {
-                                    limit: 100, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
-                                    pageUrl: discussionUrl,
-                                    dark: 0
-                                });
-                            }
-
-                            // Render main widget (persistent footer section)
-                            const mainContainer = document.getElementById('vk_comments_main');
-                            if (mainContainer) {
-                                mainContainer.innerHTML = ''; // Clear previous
-                                VK.Widgets.Comments("vk_comments_main", {
-                                    limit: 100, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
-                                    pageUrl: discussionUrl,
-                                    dark: 0
-                                });
-                            }
-                        } catch (e) {
-                            console.error("VK Widget Error:", e);
+                        if (!window.vkInitialized) {
+                            VK.init({apiId: 54496397, onlyWidgets: true});
+                            window.vkInitialized = true;
+                        }
+                        const discussionUrl = "https://vovamaniya.vercel.app/Сообщество";
+                        const pageContainer = document.getElementById('vk_comments_page');
+                        if (pageContainer && currentPage === 'discussion') {
+                            pageContainer.innerHTML = '';
+                            VK.Widgets.Comments("vk_comments_page", {
+                                limit: 100, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
+                                pageUrl: discussionUrl,
+                                dark: 0
+                            });
                         }
                     } else {
                         setTimeout(initVK, 500);
@@ -716,12 +527,7 @@
                 initVK();
             }, [currentPage]);
 
-            window.openLoginModal = () => setIsLoginModalOpen(true);
-
-            const handleLogout = () => {
-                auth.signOut();
-                setUser(null);
-            };
+            const handleLogout = () => { auth.signOut(); setUser(null); };
 
             const handleSendFeedback = async (e) => {
                 e.preventDefault();
@@ -744,66 +550,44 @@
                 setTimeout(() => setCopied(false), 2000);
             };
 
-            const faqItems = [
-                { q: "Как зайти на сервер?", a: "Скопируйте IP адрес (vmka.aternos.me:19957) и добавьте его в список серверов в Minecraft версии 1.21.1." },
-                { q: "Нужна ли лицензия?", a: "Нет, на наш сервер можно зайти как с лицензии, так и с пиратской версии игры." },
-                { q: "Что делать, если меня загриферили?", a: "Обратитесь к администрации в нашем Telegram канале." },
-            ];
-
-            const serverRules = [
-                "Запрещено использование читов.",
-                "Запрещено гриферство и воровство.",
-                "Запрещен спам и оскорбления.",
-                "Запрещена реклама.",
-                "Запрещено создание лаг-машин.",
-            ];
-
             return (
                 <div className="min-h-screen selection:bg-red-600 selection:text-white">
                     <AnimatePresence>
                         {(isLoading || !isAuthReady) && <LoadingScreen />}
                     </AnimatePresence>
 
-                    {/* Navigation */}
                     <nav className="fixed top-0 w-full z-50 bg-black/50 backdrop-blur-md border-b border-white/10">
-                        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <button onClick={() => setIsMenuOpen(true)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                                    <Icons.Menu className="w-5 h-5" />
+                        <div className="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <button onClick={() => setIsMenuOpen(true)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
+                                    <Icons.Menu className="w-4 h-4" />
                                 </button>
                                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentPage('home')}>
-                                    <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center font-black text-white text-sm">ВМ</div>
-                                    <span className="font-bold text-lg tracking-tighter uppercase">ВОВАМАНИЯ</span>
+                                    <div className="w-6 h-6 bg-red-600 rounded flex items-center justify-center font-black text-white text-[10px]">ВМ</div>
+                                    <span className="font-bold text-sm tracking-tighter uppercase">ВОВАМАНИЯ</span>
                                 </div>
                             </div>
-                            
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
                                 {user ? (
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2">
                                         {isAdmin && (
-                                            <button onClick={() => setCurrentPage('admin')} className="p-2 hover:bg-white/10 rounded-lg text-red-500">
-                                                <Icons.Gamepad2 className="w-5 h-5" />
+                                            <button onClick={() => setCurrentPage('admin')} className="p-1.5 hover:bg-white/10 rounded-lg text-red-500">
+                                                <Icons.Gamepad2 className="w-4 h-4" />
                                             </button>
                                         )}
-                                        <img 
-                                            src={user.photoURL} 
-                                            className="w-8 h-8 rounded-full border border-white/20 cursor-pointer hover:scale-110 transition-transform" 
-                                            title={user.displayName} 
-                                            onClick={() => setIsProfileModalOpen(true)}
-                                        />
-                                        <button onClick={handleLogout} className="text-white/40 hover:text-white"><Icons.X className="w-4 h-4" /></button>
+                                        <img src={user.photoURL} className="w-6 h-6 rounded-full border border-white/20 cursor-pointer hover:scale-110 transition-transform" onClick={() => setIsProfileModalOpen(true)} />
+                                        <button onClick={handleLogout} className="text-white/40 hover:text-white"><Icons.X className="w-3 h-3" /></button>
                                     </div>
                                 ) : (
-                                    <button onClick={() => setIsLoginModalOpen(true)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                                        <Icons.User className="w-6 h-6" />
+                                    <button onClick={() => setIsLoginModalOpen(true)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors">
+                                        <Icons.User className="w-5 h-5" />
                                     </button>
                                 )}
-                                <a href="https://www.youtube.com/@Воваааанчик" target="_blank" className="bg-white text-black px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-tighter hover:bg-red-500 hover:text-white transition-all">Подписаться</a>
+                                <a href="https://www.youtube.com/@Воваааанчик" target="_blank" className="bg-white text-black px-3 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-tighter hover:bg-red-500 hover:text-white transition-all">Подписаться</a>
                             </div>
                         </div>
                     </nav>
 
-                    {/* Mobile Menu */}
                     <AnimatePresence>
                         {isMenuOpen && (
                             <React.Fragment>
@@ -817,28 +601,9 @@
                                         <button onClick={() => setIsMenuOpen(false)} className="p-2 hover:bg-white/10 rounded-lg"><Icons.X className="w-5 h-5" /></button>
                                     </div>
                                     <div className="flex flex-col gap-5 text-sm font-bold tracking-widest">
-                                        <button 
-                                            onClick={() => { setCurrentPage('home'); setIsMenuOpen(false); }} 
-                                            className={`text-left transition-colors ${currentPage === 'home' ? 'text-red-500' : 'text-white hover:text-red-500'}`}
-                                        >
-                                            Главная
-                                        </button>
-                                        <button 
-                                            onClick={() => { setCurrentPage('test'); setIsMenuOpen(false); }} 
-                                            className={`text-left flex items-center gap-2 transition-colors ${currentPage === 'test' ? 'text-red-500' : 'text-white hover:text-red-500'}`}
-                                        >
-                                            Minecraft IQ тест <Icons.Brain className="w-4 h-4" />
-                                        </button>
-                                        <button 
-                                            onClick={() => { setCurrentPage('discussion'); setIsMenuOpen(false); }} 
-                                            className={`text-left uppercase transition-colors ${currentPage === 'discussion' ? 'text-red-500' : 'text-white hover:text-red-500'}`}
-                                        >
-                                            ОБСУЖДЕНИЕ
-                                        </button>
-                                        <a href="#minecraft" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-red-500 uppercase transition-colors">MINECRAFT СЕРВЕР</a>
-                                        <a href="#youtube" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-red-500 uppercase transition-colors">YOUTUBE</a>
-                                        <a href="#contact" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-red-500 uppercase transition-colors">НАПИСАТЬ МНЕ</a>
-                                        <a href="https://t.me/maniya_vova12345mine" target="_blank" className="text-blue-500 flex items-center gap-2 uppercase">TELEGRAM <Icons.Send className="w-4 h-4" /></a>
+                                        <button onClick={() => { setCurrentPage('home'); setIsMenuOpen(false); }} className={`text-left transition-colors ${currentPage === 'home' ? 'text-red-500' : 'text-white hover:text-red-500'}`}>Главная</button>
+                                        <button onClick={() => { setCurrentPage('test'); setIsMenuOpen(false); }} className={`text-left flex items-center gap-2 transition-colors ${currentPage === 'test' ? 'text-red-500' : 'text-white hover:text-red-500'}`}>Minecraft IQ тест <Icons.Brain className="w-4 h-4" /></button>
+                                        <button onClick={() => { setCurrentPage('discussion'); setIsMenuOpen(false); }} className={`text-left uppercase transition-colors ${currentPage === 'discussion' ? 'text-red-500' : 'text-white hover:text-red-500'}`}>ОБСУЖДЕНИЕ</button>
                                     </div>
                                 </motion.div>
                             </React.Fragment>
@@ -847,126 +612,43 @@
 
                     {currentPage === 'home' ? (
                         <React.Fragment>
-                            {/* Hero Section */}
-                            <section id="home" className="relative pt-32 pb-12 px-6 overflow-hidden">
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10">
-                                    <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-red-600/20 blur-[100px] rounded-full animate-pulse-slow" />
-                                    <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-blue-500/10 blur-[100px] rounded-full animate-pulse-slow" style={{ animationDelay: '2s' }} />
-                                </div>
+                            <section id="home" className="relative pt-24 pb-12 px-6 overflow-hidden">
                                 <div className="max-w-5xl mx-auto text-center">
-                                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-                                        <span className="inline-block px-3 py-1 rounded-full border border-red-500/30 bg-red-500/10 text-red-500 text-[9px] font-bold uppercase tracking-[0.2em] mb-4">Добро пожаловать в манию</span>
+                                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                                         <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 leading-[0.9]">ВОВА<span className="text-red-600 italic">МАНИЯ</span></h1>
-                                        <p className="max-w-xl mx-auto text-base text-white/60 leading-relaxed mb-8">Твой любимый канал про игры, приключения и крутой контент. Присоединяйся к нашему сообществу и стань частью истории!</p>
+                                        <p className="max-w-xl mx-auto text-base text-white/60 mb-8">Твой любимый канал про игры, приключения и крутой контент.</p>
                                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                                            <a href="#minecraft" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-500 transition-all text-sm">IP Сервера <Icons.Gamepad2 className="w-4 h-4" /></a>
-                                            <a href="https://t.me/maniya_vova12345mine" target="_blank" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-500 transition-all text-sm">Telegram Канал <Icons.Send className="w-4 h-4" /></a>
+                                            <a href="#minecraft" className="w-full sm:w-auto bg-red-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-500 transition-all text-sm">IP Сервера</a>
+                                            <a href="https://t.me/maniya_vova12345mine" target="_blank" className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-500 transition-all text-sm">Telegram Канал</a>
                                         </div>
                                     </motion.div>
                                 </div>
                             </section>
-
-                            {/* Minecraft Section */}
                             <section id="minecraft" className="py-16 px-6 relative">
                                 <AnimatedBlock className="max-w-2xl mx-auto text-center p-8 rounded-[2rem]">
-                                    <div className="flex flex-col items-center mb-8">
-                                        <div className="p-3 bg-red-600/20 rounded-xl mb-4 backdrop-blur-xl border border-white/10"><Icons.Gamepad2 className="w-6 h-6 text-red-500" /></div>
-                                        <h2 className="text-3xl font-black tracking-tighter uppercase mb-4">MINECRAFT СЕРВЕР</h2>
-                                        <p className="text-white/70 text-base leading-relaxed">Заходи на наш сервер VMKA! Мы создали уникальное пространство для выживания, творчества и общения.</p>
-                                    </div>
-                                    <div className="max-w-md mx-auto">
-                                        <div className="p-4 bg-white/5 rounded-2xl flex items-center justify-between gap-4 border border-white/5">
-                                            <div className="text-left min-w-0 flex-1">
-                                                <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1">АДРЕС СЕРВЕРА</p>
-                                                <p className="text-lg md:text-xl font-mono font-bold text-red-500 truncate">{serverIp}</p>
-                                            </div>
-                                            <button 
-                                                onClick={copyToClipboard} 
-                                                className="shrink-0 p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all active:scale-90 relative border border-white/5"
-                                            >
-                                                {copied ? <Icons.Check className="w-5 h-5 text-red-500" /> : <Icons.Copy className="w-5 h-5" />}
-                                                {copied && <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[9px] font-bold px-2 py-1 rounded shadow-xl whitespace-nowrap">СКОПИРОВАНО!</span>}
-                                            </button>
-                                        </div>
+                                    <h2 className="text-3xl font-black tracking-tighter uppercase mb-4">MINECRAFT СЕРВЕР</h2>
+                                    <div className="p-4 bg-white/5 rounded-2xl flex items-center justify-between gap-4 border border-white/5">
+                                        <p className="text-lg md:text-xl font-mono font-bold text-red-500 truncate">{serverIp}</p>
+                                        <button onClick={copyToClipboard} className="shrink-0 p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all active:scale-90 relative border border-white/5">
+                                            {copied ? <Icons.Check className="w-5 h-5 text-red-500" /> : <Icons.Copy className="w-5 h-5" />}
+                                        </button>
                                     </div>
                                 </AnimatedBlock>
                             </section>
-
-                            {/* YouTube Section */}
-                            <section id="youtube" className="py-20 px-6 relative overflow-hidden">
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-red-600/10 blur-[100px] rounded-full -z-10" />
-                                <div className="max-w-5xl mx-auto text-center">
-                                    <AnimatedBlock className="p-10 md:p-16 rounded-[3rem] relative overflow-hidden group">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 to-transparent opacity-30" />
-                                        <div className="relative z-10">
-                                            <div className="flex items-center justify-center gap-4 mb-6">
-                                                <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 2, repeat: Infinity }} className="p-4 bg-red-600 rounded-2xl shadow-xl shadow-red-600/40">
-                                                    <Icons.Youtube className="w-10 h-10 text-white" />
-                                                </motion.div>
-                                            </div>
-                                            <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-6 leading-tight">СТАНЬ ЧАСТЬЮ <br /> <span className="text-red-600">ВОВАМАНИИ</span></h2>
-                                            <p className="text-white/60 text-lg max-w-xl mx-auto mb-8 font-medium">Следи за новыми выпусками! Я регулярно выкладываю прохождения и веселые видео.</p>
-                                            <motion.a href="https://www.youtube.com/@Воваааанчик" target="_blank" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="inline-flex items-center gap-3 bg-red-600 text-white px-8 py-4 rounded-2xl font-black text-xl uppercase tracking-tighter shadow-xl shadow-red-600/50 hover:bg-red-500 transition-all group relative overflow-hidden">
-                                                <span className="relative z-10">YOUTUBE</span>
-                                                <Icons.Play className="w-5 h-5 fill-current group-hover:translate-x-1 transition-transform relative z-10" />
-                                            </motion.a>
-                                        </div>
-                                    </AnimatedBlock>
-                                </div>
-                            </section>
-
-                            {/* Contact Section */}
                             <section id="contact" className="py-16 px-6 relative">
                                 <div className="max-w-lg mx-auto">
                                     <AnimatedBlock className="p-8 md:p-10 rounded-[2.5rem] text-center">
                                         {isSent ? (
-                                            <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="py-8">
-                                                <div className="text-5xl mb-4">✉️</div>
-                                                <h2 className="text-2xl font-black uppercase tracking-tighter mb-3">Отправлено!</h2>
-                                                <p className="text-white/60 text-sm">Я скоро прочитаю твое сообщение.</p>
-                                                <button onClick={() => setIsSent(false)} className="mt-6 text-red-500 font-bold uppercase tracking-widest text-[10px] hover:underline">Написать еще раз</button>
-                                            </motion.div>
+                                            <div className="py-8"><h2 className="text-2xl font-black uppercase tracking-tighter mb-3">Отправлено!</h2></div>
                                         ) : (
-                                            <form onSubmit={handleSendFeedback} className="text-left">
-                                                <h2 className="text-2xl font-black tracking-tighter mb-2 text-center">Написать мне</h2>
-                                                <p className="text-white/40 text-center mb-8 text-sm">Есть предложение? Пиши!</p>
-                                                <div className="space-y-3">
-                                                    <input type="text" placeholder="Твое имя" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 focus:outline-none focus:border-red-500 transition-colors text-white placeholder:text-white/20 text-sm" />
-                                                    <textarea placeholder="Сообщение..." required value={message} onChange={(e) => setMessage(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 focus:outline-none focus:border-red-500 transition-colors text-white placeholder:text-white/20 h-28 resize-none text-sm" />
-                                                    <button type="submit" disabled={isSending} className={`w-full mt-4 py-4 rounded-xl font-black uppercase tracking-tighter text-base transition-all shadow-xl ${isSending ? 'bg-red-600/50 cursor-not-allowed' : 'bg-red-600 hover:bg-red-500 shadow-red-600/20 active:scale-[0.98]'}`}>{isSending ? 'Отправка...' : 'Отправить'}</button>
-                                                </div>
+                                            <form onSubmit={handleSendFeedback} className="text-left space-y-3">
+                                                <h2 className="text-2xl font-black tracking-tighter mb-8 text-center">Написать мне</h2>
+                                                <input type="text" placeholder="Твое имя" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white text-sm" />
+                                                <textarea placeholder="Сообщение..." required value={message} onChange={(e) => setMessage(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-white h-28 resize-none text-sm" />
+                                                <button type="submit" disabled={isSending} className="w-full mt-4 py-4 rounded-xl font-black uppercase tracking-tighter text-base bg-red-600 hover:bg-red-500 transition-all">{isSending ? 'Отправка...' : 'Отправить'}</button>
                                             </form>
                                         )}
                                     </AnimatedBlock>
-                                </div>
-                            </section>
-
-                            {/* FAQ & Rules */}
-                            <section className="py-16 px-6">
-                                <div className="max-w-2xl mx-auto">
-                                    <div className="text-center mb-10"><h2 className="text-2xl font-bold tracking-tight uppercase">Вопросы</h2></div>
-                                    <div className="space-y-4">
-                                        {faqItems.map((item, idx) => (
-                                            <AnimatedBlock key={idx} className="p-6 rounded-2xl">
-                                                <h3 className="text-base font-bold mb-2 flex items-center gap-3"><span className="w-6 h-6 bg-red-600/20 text-red-500 rounded flex items-center justify-center text-[10px] font-black">Q</span> {item.q}</h3>
-                                                <p className="text-white/60 text-sm leading-relaxed pl-9">{item.a}</p>
-                                            </AnimatedBlock>
-                                        ))}
-                                    </div>
-                                </div>
-                            </section>
-
-                            <section id="rules" className="py-16 px-6 relative">
-                                <div className="max-w-2xl mx-auto">
-                                    <div className="text-center mb-10"><h2 className="text-2xl font-bold tracking-tight uppercase mb-2">Правила</h2><p className="text-white/60 text-sm">Соблюдение правил обязательно.</p></div>
-                                    <div className="space-y-3">
-                                        {serverRules.map((rule, idx) => (
-                                            <AnimatedBlock key={idx} className="flex items-center gap-4 p-4 rounded-xl">
-                                                <div className="w-8 h-8 bg-red-600/20 text-red-500 rounded-lg flex items-center justify-center font-black text-xs shrink-0 border border-red-500/20">{idx + 1}</div>
-                                                <p className="text-white/80 font-medium text-sm">{rule}</p>
-                                            </AnimatedBlock>
-                                        ))}
-                                    </div>
                                 </div>
                             </section>
                         </React.Fragment>
@@ -981,7 +663,6 @@
                     <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
                     <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} user={user} onLogout={handleLogout} />
 
-                    {/* Footer */}
                     <footer className="py-10 px-6 border-t border-white/5">
                         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
                             <div className="flex items-center gap-2">
@@ -989,27 +670,8 @@
                                 <span className="font-bold tracking-tighter uppercase text-sm">ВОВАМАНИЯ</span>
                             </div>
                             <p className="text-white/40 text-[9px] font-medium uppercase tracking-[0.2em]">© 2026 ВОВАМАНИЯ. Все права защищены.</p>
-                            <div className="flex items-center gap-4">
-                                <a href="https://t.me/maniya_vova12345mine" target="_blank" className="text-white/40 hover:text-white transition-colors"><Icons.Send className="w-4 h-4" /></a>
-                                <a href="https://www.youtube.com/@Воваааанчик" target="_blank" className="text-white/40 hover:text-white transition-colors"><Icons.Youtube className="w-4 h-4" /></a>
-                                <a href="#" className="text-white/40 hover:text-white transition-colors"><Icons.Gamepad2 className="w-4 h-4" /></a>
-                            </div>
                         </div>
                     </footer>
-
-                    {/* VK Comments Widget - Main Page Bottom */}
-                    <div className="max-w-4xl mx-auto mt-10 mb-20 px-4 sm:px-6">
-                        <div className="flex items-center justify-center gap-3 mb-8">
-                            <div className="h-px bg-white/10 flex-1"></div>
-                            <h2 className="text-2xl md:text-3xl font-black tracking-tighter text-center uppercase">ОБСУЖДЕНИЕ</h2>
-                            <div className="h-px bg-white/10 flex-1"></div>
-                        </div>
-                        <div className="vk-wrapper">
-                            <div className="vk-shield-top"></div>
-                            <div className="vk-logo-cover">ВМ</div>
-                            <div id="vk_comments_main"></div>
-                        </div>
-                    </div>
                 </div>
             );
         };
