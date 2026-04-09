@@ -4,7 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ВоваМания</title>
+    <meta name="description" content="Официальный сайт ВоваМания — твой любимый канал про игры, приключения и крутой контент. Присоединяйся к нашему сообществу!" />
     <meta name="yandex-verification" content="949899a5701eb064" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://vovamaniya.vercel.app/" />
+    <meta property="og:title" content="ВоваМания — Официальный сайт" />
+    <meta property="og:description" content="Твой любимый канал про игры, приключения и крутой контент. Присоединяйся к нашему сообществу и стань частью истории!" />
+    <meta property="og:image" content="https://vovamaniya.vercel.app/og-image.jpg" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://vovamaniya.vercel.app/" />
+    <meta property="twitter:title" content="ВоваМания — Официальный сайт" />
+    <meta property="twitter:description" content="Твой любимый канал про игры, приключения и крутой контент. Присоединяйся к нашему сообществу и стань частью истории!" />
+    <meta property="twitter:image" content="https://vovamaniya.vercel.app/og-image.jpg" />
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -1038,7 +1053,7 @@
                                         )}
                                         <img 
                                             src={user.photoURL} 
-                                            className="w-8 h-8 rounded-full border border-white/20 cursor-pointer hover:scale-110 transition-transform object-cover" 
+                                            className="w-8 h-8 rounded-full border border-white/20 cursor-pointer hover:scale-110 transition-transform object-cover flex-shrink-0 aspect-square" 
                                             title={user.displayName} 
                                             onClick={() => setIsProfileModalOpen(true)}
                                         />
