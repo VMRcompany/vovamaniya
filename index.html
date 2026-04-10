@@ -211,16 +211,14 @@
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(err => console.error("Auth Persistence Error:", err));
 
         // Initialize Firestore with named database
-        // Use the app instance to get the specific database
         const db = firebase.app().firestore(firebaseConfig.firestoreDatabaseId);
         
         // Robust override to prevent any part of the app or SDK from hitting "(default)"
         const originalFirestore = firebase.firestore;
         const firestoreProxy = function(app) {
-            if (!app || app === firebase.app()) {
-                return firebase.app().firestore(firebaseConfig.firestoreDatabaseId);
-            }
-            return originalFirestore.apply(this, arguments);
+            const targetApp = app || firebase.app();
+            // Use the app's firestore method directly to avoid recursion if we were to use firebase.firestore(targetApp)
+            return targetApp.firestore(firebaseConfig.firestoreDatabaseId);
         };
         
         // Copy all static properties (Timestamp, FieldValue, etc.)
@@ -537,18 +535,31 @@
         const VideoView = ({ user, isAdmin }) => {
             const [posts, setPosts] = useState([]);
             const [loadingPosts, setLoadingPosts] = useState(true);
+            const [error, setError] = useState(null);
             const [isAdding, setIsAdding] = useState(false);
             const [newPost, setNewPost] = useState({ type: 'video', title: '', content: '', mediaUrl: '' });
             const [uploadProgress, setUploadProgress] = useState(0);
             const [isUploading, setIsUploading] = useState(false);
+            const [uploadedUrl, setUploadedUrl] = useState(null);
             const fileInputRef = useRef(null);
 
             useEffect(() => {
-                const unsubscribe = db.collection('posts').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-                    setPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                console.log("Subscribing to posts...");
+                const unsubscribe = db.collection('posts').onSnapshot(snapshot => {
+                    console.log("Posts snapshot received, count:", snapshot.size);
+                    const fetchedPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    // Sort client-side by createdAt desc
+                    fetchedPosts.sort((a, b) => {
+                        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+                        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+                        return dateB - dateA;
+                    });
+                    setPosts(fetchedPosts);
                     setLoadingPosts(false);
-                }, error => {
-                    console.error("Firestore error:", error);
+                    setError(null);
+                }, err => {
+                    console.error("Firestore error in VideoView:", err);
+                    setError(err.message);
                     setLoadingPosts(false);
                 });
                 return unsubscribe;
@@ -557,6 +568,7 @@
             const handleFileUpload = async (file) => {
                 if (!file) return null;
                 setIsUploading(true);
+                setUploadProgress(0);
                 const storageRef = storage.ref(`posts/${Date.now()}_${file.name}`);
                 const uploadTask = storageRef.put(file);
 
@@ -569,12 +581,13 @@
                         (error) => {
                             console.error("Upload error:", error);
                             setIsUploading(false);
+                            setError("Ошибка загрузки файла: " + error.message);
                             reject(error);
                         }, 
                         async () => {
                             const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
                             setIsUploading(false);
-                            setUploadProgress(0);
+                            setUploadedUrl(downloadURL);
                             resolve(downloadURL);
                         }
                     );
@@ -583,9 +596,9 @@
 
             const handleAddPost = async (e) => {
                 e.preventDefault();
-                let finalMediaUrl = newPost.mediaUrl;
+                let finalMediaUrl = uploadedUrl || newPost.mediaUrl;
 
-                if (fileInputRef.current?.files[0]) {
+                if (!finalMediaUrl && fileInputRef.current?.files[0]) {
                     try {
                         finalMediaUrl = await handleFileUpload(fileInputRef.current.files[0]);
                     } catch (err) {
@@ -602,12 +615,13 @@
                 try {
                     await db.collection('posts').add({
                         ...newPost,
-                        mediaUrl: finalMediaUrl,
+                        mediaUrl: finalMediaUrl || '',
                         authorUid: user.uid,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     setIsAdding(false);
                     setNewPost({ type: 'video', title: '', content: '', mediaUrl: '' });
+                    setUploadedUrl(null);
                     if (fileInputRef.current) fileInputRef.current.value = '';
                 } catch (error) {
                     console.error("Error adding post:", error);
@@ -697,8 +711,10 @@
                                                                 accept={newPost.type === 'video' ? 'video/*' : newPost.type === 'photo' ? 'image/*' : newPost.type === 'audio' ? 'audio/*' : '*'}
                                                                 className="hidden"
                                                                 onChange={(e) => {
-                                                                    if (e.target.files[0]) {
+                                                                    const file = e.target.files[0];
+                                                                    if (file) {
                                                                         setNewPost({...newPost, mediaUrl: ''}); // Clear URL if file selected
+                                                                        handleFileUpload(file);
                                                                     }
                                                                 }}
                                                             />
@@ -746,7 +762,20 @@
                         )}
 
                         <div className="space-y-12">
-                            {loadingPosts ? (
+                            {error && (
+                                <div className="p-8 bg-red-600/10 border border-red-500/20 rounded-[2rem] text-center">
+                                    <Icons.AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                                    <h3 className="text-xl font-black uppercase tracking-tighter mb-2">Ошибка загрузки</h3>
+                                    <p className="text-white/60 text-sm mb-6">{error}</p>
+                                    <button 
+                                        onClick={() => window.location.reload()} 
+                                        className="bg-red-600 text-white px-8 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-red-500 transition-all"
+                                    >
+                                        Обновить страницу
+                                    </button>
+                                </div>
+                            )}
+                            {!error && loadingPosts ? (
                                 <div className="text-center py-20 text-white/20 uppercase font-black tracking-widest animate-pulse">Загрузка постов...</div>
                             ) : posts.length === 0 ? (
                                 <div className="text-center py-20 text-white/20 uppercase font-black tracking-widest">Постов пока нет</div>
