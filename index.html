@@ -51,11 +51,12 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
     <!-- Yandex ID SDK -->
     <script src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js"></script>
-    <!-- VK Open API -->
-    <script type="text/javascript" src="https://vk.com/js/api/openapi.js?169"></script>
-
     <!-- YouTube API -->
     <script src="https://www.youtube.com/iframe_api"></script>
+    
+    <!-- Elfsight Comments -->
+    <script src="https://elfsightcdn.com/platform.js" async></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body {
@@ -88,98 +89,54 @@
             0%, 100% { opacity: 0.3; }
             50% { opacity: 0.6; }
         }
-        /* VK Comments Custom Styling */
-        #vk_comments_main, #vk_comments_main iframe,
-        #vk_comments_page, #vk_comments_page iframe {
-            width: 100% !important;
-            display: block !important;
+        
+        /* Hide Elfsight Branding */
+        a[href*="elfsight.com"], 
+        [class*="elfsight-app"] > a, 
+        [class*="elfsight-app"] ~ a,
+        div[class*="elfsight-app"] + a,
+        div[class*="elfsight-app"] > div[class*="elfsight-app"],
+        .eapps-link,
+        .elfsight-app-branding,
+        [class*="WidgetTitle__BadgeContainer"],
+        [class*="Badge__Container"],
+        [class*="copyright"],
+        [class*="elfsight"] a,
+        header a[href*="elfsight.com"],
+        #elfsight-app-wrapper a,
+        div[style*="z-index: 999999"],
+        div[style*="z-index: 999998"],
+        div[class*="-link"][class*="-container"],
+        [class*="elfsight"]::after,
+        [class*="elfsight"]::before,
+        .eapps-comments-item-link,
+        .eapps-comments-branding {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            width: 0 !important;
+            max-height: 0 !important;
+            max-width: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            pointer-events: none !important;
+            position: absolute !important;
+            left: -9999px !important;
+            z-index: -100 !important;
         }
-        .vk-wrapper {
+
+        /* Community Widget Wrapper */
+        .community-container {
             width: 100%;
-            border-radius: 1.5rem;
-            background: #0a0a0a;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 12px;
             margin-bottom: 5rem;
             position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            min-height: 400px;
             z-index: 10;
-        }
-        @media (max-width: 640px) {
-            .vk-wrapper {
-                padding: 8px 0;
-                margin-bottom: 2rem;
-                min-height: 700px;
-                border-radius: 0;
-                width: 100vw;
-                margin-left: calc(-50vw + 50%);
-                border-left: none;
-                border-right: none;
-            }
-        }
-        /* Inverted Dark mode for best appearance */
-        #vk_comments_main, #vk_comments_page, #vk_groups {
-            filter: invert(0.9) hue-rotate(155deg) brightness(1.1) contrast(1.2);
-            background: white !important;
-            border-radius: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 2rem;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             overflow: hidden;
-            border: none !important;
-        }
-        /* Ensure VK iframe is responsive and grows with content */
-        #vk_comments_main, #vk_comments_main iframe,
-        #vk_comments_page, #vk_comments_page iframe {
-            width: 100% !important;
-            max-width: 100% !important;
-            min-height: 400px !important;
-        }
-        @media (max-width: 640px) {
-            #vk_comments_main, #vk_comments_main iframe,
-            #vk_comments_page, #vk_comments_page iframe {
-                min-height: 800px !important;
-            }
-        }
-        /* Full block of the top bar to hide VK logo and links */
-        .vk-shield-top {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 64px; 
-            z-index: 100;
-            background: #19191a; /* Matches VK dark background */
-            cursor: default;
-            pointer-events: auto; /* Block all clicks on the top bar */
-        }
-        .vk-logo-cover {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            width: 40px;
-            height: 40px;
-            background: #dc2626;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 14px;
-            border-radius: 8px;
-            z-index: 101;
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-            pointer-events: none;
-        }
-        @media (max-width: 640px) {
-            .vk-shield-top {
-                height: 50px;
-            }
-            .vk-logo-cover {
-                top: 8px;
-                left: 8px;
-                width: 34px;
-                height: 34px;
-                font-size: 12px;
-            }
         }
     </style>
 </head>
@@ -906,17 +863,8 @@
                             <p className="text-white/60 max-w-2xl mx-auto">Оставляйте свои отзывы, предложения и просто общайтесь с другими участниками нашего сообщества!</p>
                         </motion.div>
 
-                        {!user && (
-                            <div className="mb-12 p-8 glass rounded-[2rem] text-center">
-                                <p className="text-sm font-bold uppercase tracking-widest mb-4">Чтобы писать в обсуждении, нужно войти</p>
-                                <button onClick={() => window.openLoginModal()} className="bg-red-600 px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-red-500 transition-all">Войти сейчас</button>
-                            </div>
-                        )}
-
-                        <div className="vk-wrapper">
-                            <div className="vk-shield-top"></div>
-                            <div className="vk-logo-cover">ВМ</div>
-                            <div id="vk_comments_page"></div>
+                        <div className="community-container">
+                            <div className="elfsight-app-280aa841-19d0-4572-a294-30d5bb640777" data-elfsight-app-lazy></div>
                         </div>
                         
                         <div className="text-center mt-12">
@@ -1124,48 +1072,6 @@
 
                 setTimeout(() => setIsLoading(false), 1000);
                 if (window.emailjs) emailjs.init("VBh-ljt32c38-wL0f");
-                
-                // Initialize VK Comments
-                const initVK = () => {
-                    if (window.VK) {
-                        try {
-                            if (!window.vkInitialized) {
-                                VK.init({apiId: 54496397, onlyWidgets: true});
-                                window.vkInitialized = true;
-                            }
-                            
-                            const baseUrl = "https://vovamaniya.vercel.app/";
-                            const discussionUrl = baseUrl + 'Сообщество';
-                            
-                            // Render page widget (specific Discussion page)
-                            const pageContainer = document.getElementById('vk_comments_page');
-                            if (pageContainer && currentPage === 'discussion') {
-                                pageContainer.innerHTML = ''; // Clear previous
-                                VK.Widgets.Comments("vk_comments_page", {
-                                    limit: 100, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
-                                    pageUrl: discussionUrl,
-                                    dark: 0
-                                });
-                            }
-
-                            // Render main widget (persistent footer section)
-                            const mainContainer = document.getElementById('vk_comments_main');
-                            if (mainContainer) {
-                                mainContainer.innerHTML = ''; // Clear previous
-                                VK.Widgets.Comments("vk_comments_main", {
-                                    limit: 100, attach: "*", autoPublish: 1, norealtime: 0, height: 0, width: "auto", 
-                                    pageUrl: discussionUrl,
-                                    dark: 0
-                                });
-                            }
-                        } catch (e) {
-                            console.error("VK Widget Error:", e);
-                        }
-                    } else {
-                        setTimeout(initVK, 500);
-                    }
-                };
-                initVK();
             }, [currentPage]);
 
             window.openLoginModal = () => setIsLoginModalOpen(true);
@@ -1467,17 +1373,15 @@
                         </div>
                     </footer>
 
-                    {/* VK Comments Widget - Main Page Bottom */}
+                    {/* Elfsight Comments Widget - Main Page Bottom */}
                     <div className="max-w-4xl mx-auto mt-10 mb-20 px-4 sm:px-6">
                         <div className="flex items-center justify-center gap-3 mb-8">
                             <div className="h-px bg-white/10 flex-1"></div>
                             <h2 className="text-2xl md:text-3xl font-black tracking-tighter text-center uppercase">ОБСУЖДЕНИЕ</h2>
                             <div className="h-px bg-white/10 flex-1"></div>
                         </div>
-                        <div className="vk-wrapper">
-                            <div className="vk-shield-top"></div>
-                            <div className="vk-logo-cover">ВМ</div>
-                            <div id="vk_comments_main"></div>
+                        <div className="community-container">
+                            <div className="elfsight-app-280aa841-19d0-4572-a294-30d5bb640777" data-elfsight-app-lazy></div>
                         </div>
                     </div>
                 </div>
