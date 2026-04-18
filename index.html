@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ВоваМания</title>
-    <meta name="description" content="Официальный сайт ВоваМания — твой любимый канал про майнкрафт, приключения и крутой контент. Присоединяйся к нашему сообществу!" />
+    <meta name="description" content="Официальный сайт ВоваМания — твой любимый канал про игры, приключения и крутой контент. Присоединяйся к нашему сообществу!" />
     <meta name="yandex-verification" content="949899a5701eb064" />
     
     <!-- Open Graph / Facebook -->
@@ -60,9 +60,6 @@
     <!-- YouTube API -->
     <script src="https://www.youtube.com/iframe_api"></script>
     
-    <!-- Elfsight Comments -->
-    <script src="https://elfsightcdn.com/platform.js" async></script>
-    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body {
@@ -101,34 +98,37 @@
         [class*="elfsight"] a,
         [class*="eapps"] a,
         [class*="CookieConsent"] a,
-        [class*="branding"],
-        [class*="copyright"],
-        [class*="Badge"],
-        [class*="Logo"],
+        /* ULTIMATE BRANDING BLACKOUT */
+        [class*="elfsight"] a, 
+        [class*="eapps"] a,
+        [href*="elfsight.com"],
+        [title*="elfsight"],
         [class*="Branding"],
-        [class*="Control"],
-        [class*="Panel"],
-        a[class*="Link"],
-        a[href*="elfsight.com"],
-        div[class*="elfsight-app"] + div,
-        div[class*="elfsight-app"] ~ div,
-        div[class*="eapps-cookie-consent"] + div,
-        div[class*="eapps-cookie-consent"] ~ div,
-        div[id*="elfsight"] a,
-        div[id*="eapps"] a {
+        [class*="branding"],
+        [class*="Badge"],
+        [class*="badge"],
+        [class*="copyright"],
+        [class*="Link"] {
             display: none !important;
             opacity: 0 !important;
             visibility: hidden !important;
             height: 0 !important;
             width: 0 !important;
-            max-height: 0 !important;
-            max-width: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
             pointer-events: none !important;
             position: absolute !important;
             left: -9999px !important;
-            z-index: -100 !important;
+        }
+
+        /* The "Zamazka" Shield - will be positioned by JS */
+        #ultimate-branding-shield {
+            position: fixed !important;
+            background: #1a1a1a !important; /* MATCH CHAT BACKGROUND */
+            height: 38px !important; /* Slightly taller to be safe */
+            z-index: 2147483647 !important;
+            pointer-events: none !important;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            display: none;
         }
 
         /* Community Widget Wrapper */
@@ -292,6 +292,12 @@
             ),
             Pause: ({ className }) => (
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="4" height="16" x="6" y="4"/><rect width="4" height="16" x="14" y="4"/></svg>
+            ),
+            ArrowLeft: ({ className }) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            ),
+            Layers: ({ className }) => (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.1 6.27a2 2 0 0 0 0 3.46l9.07 4.09a2 2 0 0 0 1.66 0l9.07-4.09a2 2 0 0 0 0-3.46Z"/><path d="m2.1 14.27 9.07 4.09a2 2 0 0 0 1.66 0l9.07-4.09"/><path d="m2.1 10.27 9.07 4.09a2 2 0 0 0 1.66 0l9.07-4.09"/></svg>
             ),
             Brain: ({ className }) => (
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.54Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.54Z"/></svg>
@@ -892,6 +898,32 @@
             );
         };
 
+        const ProjectsView = ({ onBack }) => {
+            return (
+                <div className="min-h-screen pt-32 pb-20 px-6 max-w-5xl mx-auto">
+                    <button onClick={onBack} className="flex items-center gap-2 text-white/60 hover:text-white mb-12 transition-colors">
+                        <Icons.ArrowLeft className="w-5 h-5" /> Назад
+                    </button>
+                    
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
+                        <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-6 uppercase">МОИ <span className="text-red-600 italic">ПРОЕКТЫ</span></h1>
+                        <p className="text-white/60 max-w-2xl mx-auto">Здесь вы можете найти мои текущие проекты. Напишите моему помощнику Гришке (кнопка справа), если у вас есть вопросы!</p>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Placeholder for future projects */}
+                        <div className="p-8 rounded-[2rem] bg-white/5 border border-white/10 flex flex-col items-center justify-center text-center min-h-[300px] group hover:bg-white/10 transition-all">
+                             <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-white/5 group-hover:scale-110 transition-transform">
+                                <Icons.Layers className="w-8 h-8 text-white/20" />
+                             </div>
+                             <h3 className="text-xl font-bold uppercase tracking-tight mb-2">Скоро здесь что-то будет</h3>
+                             <p className="text-sm text-white/40">Раздел находится в разработке.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const DiscussionView = ({ onBack, user }) => {
             return (
                 <div className="min-h-screen pt-32 pb-20 px-0 sm:px-6">
@@ -1111,6 +1143,19 @@
 
                 setTimeout(() => setIsLoading(false), 500);
                 if (window.emailjs) emailjs.init("VBh-ljt32c38-wL0f");
+
+                // Dynamic Elfsight Loading for speed and reliability in Russia
+                const elfsightScriptId = 'elfsight-platform-script';
+                if (!document.getElementById(elfsightScriptId)) {
+                    const script = document.createElement('script');
+                    script.id = elfsightScriptId;
+                    script.src = "https://elfsightcdn.com/platform.js";
+                    script.defer = true;
+                    // Load with a slight delay to prioritize main content
+                    setTimeout(() => {
+                        document.body.appendChild(script);
+                    }, 2000);
+                }
             }, [currentPage]);
 
             window.openLoginModal = () => setIsLoginModalOpen(true);
@@ -1255,6 +1300,12 @@
                                             className={`text-left flex items-center gap-2 transition-colors ${currentPage === 'playlists' ? 'text-red-500' : 'text-white hover:text-red-500'}`}
                                         >
                                             МОИ ПЛЕЙЛИСТЫ <Icons.List className="w-4 h-4" />
+                                        </button>
+                                        <button 
+                                            onClick={() => { setCurrentPage('projects'); setIsMenuOpen(false); }} 
+                                            className={`text-left flex items-center gap-2 transition-colors ${currentPage === 'projects' ? 'text-red-500' : 'text-white hover:text-red-500'}`}
+                                        >
+                                            МОИ ПРОЕКТЫ <Icons.Layers className="w-4 h-4" />
                                         </button>
                                         <button 
                                             onClick={() => { setCurrentPage('discussion'); setIsMenuOpen(false); }} 
@@ -1403,6 +1454,8 @@
                         <VideoView user={user} isAdmin={isAdmin} />
                     ) : currentPage === 'playlists' ? (
                         <PlaylistsView onBack={() => setCurrentPage('home')} />
+                    ) : currentPage === 'projects' ? (
+                        <ProjectsView onBack={() => setCurrentPage('home')} />
                     ) : currentPage === 'admin' ? (
                         <AdminView onBack={() => setCurrentPage('home')} />
                     ) : (
@@ -1440,6 +1493,9 @@
                         </div>
                     </div>
 
+                    {/* Elfsight AI Chatbot - Global (Grigory Assistant) */}
+                    <div className="elfsight-app-85e906d9-ec70-4899-8c6b-32409f5caf52" data-elfsight-app-lazy></div>
+
                     {/* Elfsight Cookie Consent */}
                     <div className="elfsight-app-0d44ffc6-0a43-4e01-9da6-441185ae08b1" data-elfsight-app-lazy></div>
                 </div>
@@ -1447,60 +1503,109 @@
         };
 
         // Final cleanup script for Elfsight branding and Cookie Logic
+        // Absolute Nuclear Branding Cleanup
+        // THE FINAL BRANDING EXTERMINATOR
+        const exterminate = () => {
+            const process = (node) => {
+                if (!node) return;
+
+                // 1. Surgical Deletion & Sanitization
+                if (node.tagName === 'A') {
+                    const href = node.getAttribute('href') || "";
+                    const text = (node.innerText || "").toLowerCase();
+                    if (href.includes('elfsight') || text.includes('elfsight') || text.includes('chatbot widget') || text.includes('free ai')) {
+                        node.style.display = 'none';
+                        node.style.opacity = '0';
+                        node.style.pointerEvents = 'none';
+                        node.remove();
+                    }
+                }
+
+                // 2. Hide common branding classes
+                if (node.classList) {
+                    const blacklist = ['branding', 'Branding', 'Badge', 'badge', 'copyright', 'eapps-link', 'Link'];
+                    blacklist.forEach(cls => {
+                        if (node.className && typeof node.className === 'string' && node.className.includes(cls)) {
+                            node.style.setProperty('display', 'none', 'important');
+                            node.style.setProperty('opacity', '0', 'important');
+                        }
+                    });
+                }
+
+                // 3. SHADOW DOM STALKER - Inject styles into EVERY shadow root
+                if (node.shadowRoot) {
+                    if (!node.shadowRoot.querySelector('#branding-stalker-style')) {
+                        const style = document.createElement('style');
+                        style.id = 'branding-stalker-style';
+                        style.textContent = `
+                            a[href*="elfsight"], .eapps-link, [class*="branding"], [class*="Branding"], [class*="Badge"], [class*="badge"], [class*="copyright"], [class*="Link"] { 
+                                display: none !important; 
+                                opacity: 0 !important; 
+                                visibility: hidden !important; 
+                                height: 0 !important;
+                                width: 0 !important;
+                                pointer-events: none !important;
+                                position: absolute !important;
+                                left: -9999px !important;
+                            }
+                        `;
+                        node.shadowRoot.appendChild(style);
+                    }
+                    process(node.shadowRoot);
+                }
+
+                // 4. Recurse children
+                if (node.children) {
+                    Array.from(node.children).forEach(child => process(child));
+                }
+            };
+
+            process(document.body);
+
+            // 5. UPDATE PHYSICAL "ZAMAZKA" SHIELD
+            const chatbot = document.querySelector('[class*="Chatbot"], [class*="chatbot"]');
+            if (chatbot) {
+                let shield = document.getElementById('ultimate-branding-shield');
+                if (!shield) {
+                    shield = document.createElement('div');
+                    shield.id = 'ultimate-branding-shield';
+                    document.body.appendChild(shield);
+                }
+
+                const rect = chatbot.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 100) {
+                    shield.style.display = 'block';
+                    shield.style.width = (rect.width - 2) + 'px';
+                    shield.style.left = (rect.left + 1) + 'px';
+                    shield.style.bottom = (window.innerHeight - rect.bottom + 1) + 'px';
+                } else {
+                    shield.style.display = 'none';
+                }
+            }
+        };
+
+        const monitorBranding = () => {
+            exterminate();
+            requestAnimationFrame(monitorBranding);
+        };
+        monitorBranding();
+
+        // Separate Cookie Logic
         const handleCookieLogic = () => {
-            // Find Cookie Banner Buttons
             const buttons = document.querySelectorAll('button, [class*="Button"]');
             buttons.forEach(btn => {
                 const text = btn.innerText.toLowerCase();
-                
-                // Case: Decline (Продолжить без cookie)
-                if (text.includes('продолжить без cookie')) {
-                    if (!btn.dataset.hooked) {
-                        btn.addEventListener('click', () => {
-                            // On decline, we want the banner to re-appear on next load
-                            // We need to clear elfsight's storage for this specific widget
-                            localStorage.removeItem('cookies_accepted');
-                            // Find and clear any elfsight-related storage keys for the cookie app
-                            Object.keys(localStorage).forEach(key => {
-                                if (key.includes('0d44ffc6-0a43-4e01-9da6-441185ae08b1')) {
-                                    localStorage.removeItem(key);
-                                }
-                            });
-                            // Session persistence is already active, but we could force a logout or similar if needed
-                            console.log("Cookies declined: temporary session, banner will show again on next visit.");
-                        });
-                        btn.dataset.hooked = 'true';
-                    }
+                if (text.includes('продолжить без cookie') && !btn.dataset.hooked) {
+                    btn.addEventListener('click', () => {
+                        localStorage.removeItem('cookies_accepted');
+                        Object.keys(localStorage).forEach(key => { if (key.includes('0d44ffc6')) localStorage.removeItem(key); });
+                    });
+                    btn.dataset.hooked = 'true';
                 }
-                
-                // Case: Accept (Разрешить)
-                if (text.includes('разрешить')) {
-                    if (!btn.dataset.hooked) {
-                        btn.addEventListener('click', () => {
-                            localStorage.setItem('cookies_accepted', 'true');
-                            console.log("Cookies accepted: persistent data enabled.");
-                        });
-                        btn.dataset.hooked = 'true';
-                    }
+                if (text.includes('разрешить') && !btn.dataset.hooked) {
+                    btn.addEventListener('click', () => localStorage.setItem('cookies_accepted', 'true'));
+                    btn.dataset.hooked = 'true';
                 }
-            });
-
-            // Branding Cleanup
-            const selectors = [
-                'a[href*="elfsight.com"]',
-                '.eapps-link',
-                '[class*="Branding"]',
-                '[class*="elfsight-app"] ~ div',
-                'div[style*="z-index: 9999"]'
-            ];
-            selectors.forEach(sel => {
-                document.querySelectorAll(sel).forEach(el => {
-                    if (el.innerText.toLowerCase().includes('elfsight') || el.href?.includes('elfsight')) {
-                        el.style.display = 'none';
-                        el.style.opacity = '0';
-                        el.style.pointerEvents = 'none';
-                    }
-                });
             });
         };
         setInterval(handleCookieLogic, 2000);
