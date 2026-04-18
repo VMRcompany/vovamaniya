@@ -57,8 +57,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
     <!-- Yandex ID SDK -->
     <script src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-with-polyfills-latest.js"></script>
-    <!-- YouTube API -->
-    <script src="https://www.youtube.com/iframe_api"></script>
+    <!-- VK SDK -->
+    <script src="https://vk.com/js/api/openapi.js?169" type="text/javascript"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -1144,17 +1144,18 @@
                 setTimeout(() => setIsLoading(false), 500);
                 if (window.emailjs) emailjs.init("VBh-ljt32c38-wL0f");
 
-                // Dynamic Elfsight Loading for speed and reliability in Russia
+                // Dynamic Widget Loading for speed and reliability in Russia
                 const elfsightScriptId = 'elfsight-platform-script';
                 if (!document.getElementById(elfsightScriptId)) {
                     const script = document.createElement('script');
                     script.id = elfsightScriptId;
                     script.src = "https://elfsightcdn.com/platform.js";
+                    script.async = true;
                     script.defer = true;
-                    // Load with a slight delay to prioritize main content
+                    // Extreme delay for Russia to ensure site is interactive first
                     setTimeout(() => {
                         document.body.appendChild(script);
-                    }, 2000);
+                    }, 3500);
                 }
             }, [currentPage]);
 
